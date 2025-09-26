@@ -262,6 +262,7 @@ import AddEmployee from "./pages/hrmanager/AddEmployee";
 import DisplayEmployees from "./pages/hrmanager/DisplayEmployees";
 import GenerateReport from "./pages/hrmanager/GenerateReport";
 import UpdateEmployee from "./pages/hrmanager/UpdateEmployee";
+// import HRprofile from "./pages/hrmanager/";
 
 // Finance manager pages
 import FinanceLayout from "./layouts/Financelayout";
