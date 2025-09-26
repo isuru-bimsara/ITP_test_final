@@ -1,35 +1,46 @@
-// import React, { useState, useEffect } from 'react';
-// import axios from 'axios';
-// import { toast } from 'react-toastify';
-// import { validateNumber, validateText, validateDate, preventNonNumericInput, preventNumericInput } from '../utils/validation';
+
+
+
+// // frontend/src/pages/financialmanager/Salaries.jsx
+// import React, { useState, useEffect } from "react";
+// import axios from "axios";
+// import { toast } from "react-toastify";
+// import {
+//   validateNumber,
+//   validateText,
+//   validateDate,
+//   preventNonNumericInput,
+//   preventNumericInput,
+// } from "./validation";
 
 // const Salaries = () => {
 //   const [salaries, setSalaries] = useState([]);
 //   const [loading, setLoading] = useState(true);
 //   const [showForm, setShowForm] = useState(false);
 //   const [formData, setFormData] = useState({
-//     employeeName: '',
-//     role: '',
-//     basicSalary: '',
-//     allowances: '0',
-//     deductions: '0',
-//     paymentDate: '',
-//     otHours: '0',
-//     otRate: '1.5',
-//     epfRate: '8',
-//     etfRate: '12'
+//     employeeName: "",
+//     role: "",
+//     basicSalary: "",
+//     allowances: "0",
+//     deductions: "0",
+//     paymentDate: "",
+//     otHours: "0",
+//     otRate: "1.5",
+//     epfRate: "8",
+//     etfRate: "12",
 //   });
 //   const [calculatedSalary, setCalculatedSalary] = useState({
 //     otPay: 0,
 //     epfDeduction: 0,
 //     etfDeduction: 0,
-//     netSalary: 0
+//     netSalary: 0,
 //   });
 //   const [errors, setErrors] = useState({});
 //   const [submitting, setSubmitting] = useState(false);
+//   const [updatingStatus, setUpdatingStatus] = useState(null); // Track which salary status is being updated
 
 //   // Get today's date for validation
-//   const today = new Date().toISOString().split('T')[0];
+//   const today = new Date().toISOString().split("T")[0];
 
 //   useEffect(() => {
 //     fetchSalaries();
@@ -42,11 +53,11 @@
 //   const fetchSalaries = async () => {
 //     try {
 //       setLoading(true);
-//       const response = await axios.get('/api/salaries');
+//       const response = await axios.get("/api/salaries");
 //       setSalaries(response.data.data);
 //     } catch (error) {
-//       toast.error('Failed to fetch salaries');
-//       console.error('Error fetching salaries:', error);
+//       toast.error("Failed to fetch salaries");
+//       console.error("Error fetching salaries:", error);
 //     } finally {
 //       setLoading(false);
 //     }
@@ -72,13 +83,14 @@
 //     const etfDeduction = (basicSalary + otPay) * (etfRate / 100);
 
 //     // Calculate Net Salary
-//     const netSalary = basicSalary + otPay + allowances - (deductions + epfDeduction );
+//     const netSalary =
+//       basicSalary + otPay + allowances - (deductions + epfDeduction);
 
 //     setCalculatedSalary({
 //       otPay,
 //       epfDeduction,
 //       etfDeduction,
-//       netSalary: netSalary > 0 ? netSalary : 0
+//       netSalary: netSalary > 0 ? netSalary : 0,
 //     });
 //   };
 
@@ -87,49 +99,51 @@
 
 //     // Employee name validation
 //     if (!formData.employeeName.trim()) {
-//       newErrors.employeeName = 'Employee name is required';
+//       newErrors.employeeName = "Employee name is required";
 //     } else if (!validateText(formData.employeeName)) {
-//       newErrors.employeeName = 'Employee name cannot contain numbers';
+//       newErrors.employeeName = "Employee name cannot contain numbers";
+//     } else if (formData.employeeName.length > 20) {
+//       newErrors.employeeName = "Employee name cannot exceed 20 characters";
 //     }
 
 //     // Role validation
 //     if (!formData.role.trim()) {
-//     newErrors.role = 'Role is required';
-//   } else if (!validateText(formData.role)) {
-//     newErrors.role = 'Role cannot contain numbers';
-//   }
+//       newErrors.role = "Role is required";
+//     } else if (!validateText(formData.role)) {
+//       newErrors.role = "Role cannot contain numbers";
+//     }
 
 //     // Basic salary validation
 //     if (!formData.basicSalary || !validateNumber(formData.basicSalary)) {
-//       newErrors.basicSalary = 'Basic salary must be a positive number';
+//       newErrors.basicSalary = "Basic salary must be a positive number";
 //     } else if (parseFloat(formData.basicSalary) <= 0) {
-//       newErrors.basicSalary = 'Basic salary must be greater than 0';
+//       newErrors.basicSalary = "Basic salary must be greater than 0";
 //     }
 
 //     // Allowances validation
 //     if (formData.allowances && !validateNumber(formData.allowances)) {
-//       newErrors.allowances = 'Allowances must be a non-negative number';
+//       newErrors.allowances = "Allowances must be a non-negative number";
 //     }
 
 //     // Deductions validation
 //     if (formData.deductions && !validateNumber(formData.deductions)) {
-//       newErrors.deductions = 'Deductions must be a non-negative number';
+//       newErrors.deductions = "Deductions must be a non-negative number";
 //     }
 
 //     // Payment date validation - allow past dates (remove 7-day restriction for salaries)
 //     if (!formData.paymentDate) {
-//       newErrors.paymentDate = 'Payment date is required';
+//       newErrors.paymentDate = "Payment date is required";
 //     } else {
 //       const inputDate = new Date(formData.paymentDate);
 //       const today = new Date();
 //       if (inputDate > today) {
-//         newErrors.paymentDate = 'Payment date cannot be in the future';
+//         newErrors.paymentDate = "Payment date cannot be in the future";
 //       }
 //     }
 
 //     // OT hours validation
 //     if (formData.otHours && !validateNumber(formData.otHours)) {
-//       newErrors.otHours = 'OT hours must be a non-negative number';
+//       newErrors.otHours = "OT hours must be a non-negative number";
 //     }
 
 //     setErrors(newErrors);
@@ -140,7 +154,7 @@
 //     e.preventDefault();
 
 //     if (!validateForm()) {
-//       toast.error('Please fix the form errors');
+//       toast.error("Please fix the form errors");
 //       return;
 //     }
 
@@ -157,43 +171,45 @@
 //         otRate: parseFloat(formData.otRate || 1.5),
 //         epfRate: parseFloat(formData.epfRate || 8),
 //         etfRate: parseFloat(formData.etfRate || 3),
-//         paymentDate: formData.paymentDate
+//         paymentDate: formData.paymentDate,
 //       };
 
-//       console.log('Sending salary data:', salaryData);
+//       console.log("Sending salary data:", salaryData);
 
-//       const response = await axios.post('/api/salaries', salaryData);
+//       const response = await axios.post("/api/salaries", salaryData);
 
 //       if (response.data.success) {
-//         toast.success('Salary added successfully');
+//         toast.success("Salary added successfully");
 //         setShowForm(false);
 //         setFormData({
-//           employeeName: '',
-//           role: '',
-//           basicSalary: '',
-//           allowances: '0',
-//           deductions: '0',
-//           paymentDate: '',
-//           otHours: '0',
-//           otRate: '1.5',
-//           epfRate: '8',
-//           etfRate: '3'
+//           employeeName: "",
+//           role: "",
+//           basicSalary: "",
+//           allowances: "0",
+//           deductions: "0",
+//           paymentDate: "",
+//           otHours: "0",
+//           otRate: "1.5",
+//           epfRate: "8",
+//           etfRate: "3",
 //         });
 //         setErrors({});
 //         fetchSalaries();
 //       } else {
-//         toast.error(response.data.message || 'Failed to add salary');
+//         toast.error(response.data.message || "Failed to add salary");
 //       }
 //     } catch (error) {
-//       console.error('Full error object:', error);
-//       console.error('Error response data:', error.response?.data);
+//       console.error("Full error object:", error);
+//       console.error("Error response data:", error.response?.data);
 
 //       if (error.response?.data?.message) {
 //         toast.error(`Server Error: ${error.response.data.message}`);
 //       } else if (error.response?.data?.error) {
 //         toast.error(`Server Error: ${error.response.data.error}`);
 //       } else {
-//         toast.error('Failed to add salary. Please check your connection and try again.');
+//         toast.error(
+//           "Failed to add salary. Please check your connection and try again."
+//         );
 //       }
 //     } finally {
 //       setSubmitting(false);
@@ -204,39 +220,43 @@
 //     const { name, value } = e.target;
 //     setFormData({
 //       ...formData,
-//       [name]: value
+//       [name]: value,
 //     });
 
 //     // Clear error when user starts typing
 //     if (errors[name]) {
 //       setErrors({
 //         ...errors,
-//         [name]: ''
+//         [name]: "",
 //       });
 //     }
 //   };
 
 //   const handleDelete = async (id) => {
-//     if (!window.confirm('Are you sure you want to delete this salary record?')) return;
+//     if (!window.confirm("Are you sure you want to delete this salary record?"))
+//       return;
 
 //     try {
 //       await axios.delete(`/api/salaries/${id}`);
-//       toast.success('Salary record deleted successfully');
+//       toast.success("Salary record deleted successfully");
 //       fetchSalaries();
 //     } catch (error) {
-//       toast.error('Failed to delete salary record');
-//       console.error('Error deleting salary record:', error);
+//       toast.error("Failed to delete salary record");
+//       console.error("Error deleting salary record:", error);
 //     }
 //   };
 
 //   const updateSalaryStatus = async (id, status) => {
 //     try {
+//       setUpdatingStatus(id); // Set the ID of the salary being updated
 //       await axios.put(`/api/salaries/${id}/status`, { status });
-//       toast.success('Salary status updated successfully');
+//       toast.success("Salary status updated successfully");
 //       fetchSalaries();
 //     } catch (error) {
-//       toast.error('Failed to update salary status');
-//       console.error('Error updating salary status:', error);
+//       toast.error("Failed to update salary status");
+//       console.error("Error updating salary status:", error);
+//     } finally {
+//       setUpdatingStatus(null); // Reset updating status
 //     }
 //   };
 
@@ -257,15 +277,20 @@
 //           className="btn-primary"
 //           disabled={submitting}
 //         >
-//           {submitting ? 'Processing...' : 'Add Salary'}
+//           {submitting ? "Processing..." : "Add Salary"}
 //         </button>
 //       </div>
 
 //       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
 //         <div className="card">
-//           <h3 className="text-lg font-semibold text-gray-700 mb-2">Total Salaries</h3>
+//           <h3 className="text-lg font-semibold text-gray-700 mb-2">
+//             Total Salaries
+//           </h3>
 //           <p className="text-2xl font-bold text-purple-600">
-//             Rs {salaries.reduce((sum, salary) => sum + (salary.netSalary || 0), 0).toLocaleString()}
+//             Rs{" "}
+//             {salaries
+//               .reduce((sum, salary) => sum + (salary.netSalary || 0), 0)
+//               .toLocaleString()}
 //           </p>
 //         </div>
 //       </div>
@@ -301,8 +326,12 @@
 //             <tbody className="bg-white divide-y divide-gray-200">
 //               {salaries.length === 0 ? (
 //                 <tr>
-//                   <td colSpan="7" className="px-6 py-4 text-center text-gray-500">
-//                     No salary records found. Add your first salary record to get started.
+//                   <td
+//                     colSpan="7"
+//                     className="px-6 py-4 text-center text-gray-500"
+//                   >
+//                     No salary records found. Add your first salary record to get
+//                     started.
 //                   </td>
 //                 </tr>
 //               ) : (
@@ -315,33 +344,53 @@
 //                       {salary.role}
 //                     </td>
 //                     <td className="px-6 py-4 whitespace-nowrap">
-//                       Rs {salary.basicSalary?.toLocaleString() || '0'}
+//                       Rs {salary.basicSalary?.toLocaleString() || "0"}
 //                     </td>
 //                     <td className="px-6 py-4 whitespace-nowrap">
-//                       Rs {salary.netSalary?.toLocaleString() || '0'}
+//                       Rs {salary.netSalary?.toLocaleString() || "0"}
 //                     </td>
 //                     <td className="px-6 py-4 whitespace-nowrap">
-//                       {salary.paymentDate ? new Date(salary.paymentDate).toLocaleDateString() : 'N/A'}
+//                       {salary.paymentDate
+//                         ? new Date(salary.paymentDate).toLocaleDateString()
+//                         : "N/A"}
 //                     </td>
 //                     <td className="px-6 py-4 whitespace-nowrap">
-//                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-//                         salary.status === 'Paid'
-//                           ? 'bg-green-100 text-green-800'
-//                           : 'bg-yellow-100 text-yellow-800'
-//                       }`}>
-//                         {salary.status || 'Pending'}
+//                       <span
+//                         className={`px-2 py-1 text-xs font-medium rounded-full ${
+//                           salary.status === "Paid"
+//                             ? "bg-green-100 text-green-800"
+//                             : "bg-yellow-100 text-yellow-800"
+//                         }`}
+//                       >
+//                         {salary.status || "Pending"}
 //                       </span>
 //                     </td>
 //                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
 //                       <button
-//                         onClick={() => updateSalaryStatus(salary._id, salary.status === 'Paid' ? 'Pending' : 'Paid')}
-//                         className="text-blue-600 hover:text-blue-900 mr-3"
+//                         onClick={() =>
+//                           updateSalaryStatus(
+//                             salary._id,
+//                             salary.status === "Paid" ? "Pending" : "Paid"
+//                           )
+//                         }
+//                         className={`mr-3 ${
+//                           salary.status === "Paid"
+//                             ? "text-gray-400 cursor-not-allowed"
+//                             : "text-blue-600 hover:text-blue-900"
+//                         }`}
+//                         disabled={
+//                           salary.status === "Paid" ||
+//                           updatingStatus === salary._id
+//                         }
 //                       >
-//                         {salary.status === 'Paid' ? 'Mark Pending' : 'Mark Paid'}
+//                         {updatingStatus === salary._id
+//                           ? "Updating..."
+//                           : "Mark as Paid"}
 //                       </button>
 //                       <button
 //                         onClick={() => handleDelete(salary._id)}
 //                         className="text-red-600 hover:text-red-900"
+//                         disabled={updatingStatus === salary._id}
 //                       >
 //                         Delete
 //                       </button>
@@ -367,8 +416,18 @@
 //                 className="text-gray-500 hover:text-gray-700"
 //                 disabled={submitting}
 //               >
-//                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-//                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+//                 <svg
+//                   className="w-6 h-6"
+//                   fill="none"
+//                   stroke="currentColor"
+//                   viewBox="0 0 24 24"
+//                 >
+//                   <path
+//                     strokeLinecap="round"
+//                     strokeLinejoin="round"
+//                     strokeWidth="2"
+//                     d="M6 18L18 6M6 6l12 12"
+//                   />
 //                 </svg>
 //               </button>
 //             </div>
@@ -376,36 +435,52 @@
 //             <form onSubmit={handleSubmit}>
 //               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
 //                 <div>
-//                   <label className="block text-sm font-medium text-gray-700 mb-1">Employee Name *</label>
+//                   <label className="block text-sm font-medium text-gray-700 mb-1">
+//                     Employee Name *
+//                   </label>
 //                   <input
 //                     type="text"
 //                     name="employeeName"
 //                     value={formData.employeeName}
 //                     onChange={handleChange}
 //                     onKeyDown={preventNumericInput}
-//                     className={`input-field ${errors.employeeName ? 'border-red-500' : ''}`}
+//                     className={`input-field ${
+//                       errors.employeeName ? "border-red-500" : ""
+//                     }`}
 //                     placeholder="Enter employee name"
 //                     required
 //                     disabled={submitting}
 //                   />
-//                   {errors.employeeName && <p className="text-red-500 text-xs mt-1">{errors.employeeName}</p>}
+//                   {errors.employeeName && (
+//                     <p className="text-red-500 text-xs mt-1">
+//                       {errors.employeeName}
+//                     </p>
+//                   )}
 //                 </div>
 //                 <div>
-//                   <label className="block text-sm font-medium text-gray-700 mb-1">Role *</label>
+//                   <label className="block text-sm font-medium text-gray-700 mb-1">
+//                     Role *
+//                   </label>
 //                   <input
 //                     type="text"
 //                     name="role"
 //                     value={formData.role}
 //                     onChange={handleChange}
-//                     className={`input-field ${errors.role ? 'border-red-500' : ''}`}
+//                     className={`input-field ${
+//                       errors.role ? "border-red-500" : ""
+//                     }`}
 //                     placeholder="Enter employee role"
 //                     required
 //                     disabled={submitting}
 //                   />
-//                   {errors.role && <p className="text-red-500 text-xs mt-1">{errors.role}</p>}
+//                   {errors.role && (
+//                     <p className="text-red-500 text-xs mt-1">{errors.role}</p>
+//                   )}
 //                 </div>
 //                 <div>
-//                   <label className="block text-sm font-medium text-gray-700 mb-1">Basic Salary (Rs) *</label>
+//                   <label className="block text-sm font-medium text-gray-700 mb-1">
+//                     Basic Salary (Rs) *
+//                   </label>
 //                   <input
 //                     type="number"
 //                     name="basicSalary"
@@ -414,15 +489,23 @@
 //                     onKeyDown={preventNonNumericInput}
 //                     min="0"
 //                     step="0.01"
-//                     className={`input-field ${errors.basicSalary ? 'border-red-500' : ''}`}
+//                     className={`input-field ${
+//                       errors.basicSalary ? "border-red-500" : ""
+//                     }`}
 //                     placeholder="0.00"
 //                     required
 //                     disabled={submitting}
 //                   />
-//                   {errors.basicSalary && <p className="text-red-500 text-xs mt-1">{errors.basicSalary}</p>}
+//                   {errors.basicSalary && (
+//                     <p className="text-red-500 text-xs mt-1">
+//                       {errors.basicSalary}
+//                     </p>
+//                   )}
 //                 </div>
 //                 <div>
-//                   <label className="block text-sm font-medium text-gray-700 mb-1">Allowances (Rs)</label>
+//                   <label className="block text-sm font-medium text-gray-700 mb-1">
+//                     Allowances (Rs)
+//                   </label>
 //                   <input
 //                     type="number"
 //                     name="allowances"
@@ -431,14 +514,22 @@
 //                     onKeyDown={preventNonNumericInput}
 //                     min="0"
 //                     step="0.01"
-//                     className={`input-field ${errors.allowances ? 'border-red-500' : ''}`}
+//                     className={`input-field ${
+//                       errors.allowances ? "border-red-500" : ""
+//                     }`}
 //                     placeholder="0.00"
 //                     disabled={submitting}
 //                   />
-//                   {errors.allowances && <p className="text-red-500 text-xs mt-1">{errors.allowances}</p>}
+//                   {errors.allowances && (
+//                     <p className="text-red-500 text-xs mt-1">
+//                       {errors.allowances}
+//                     </p>
+//                   )}
 //                 </div>
 //                 <div>
-//                   <label className="block text-sm font-medium text-gray-700 mb-1">Deductions (Rs)</label>
+//                   <label className="block text-sm font-medium text-gray-700 mb-1">
+//                     Deductions (Rs)
+//                   </label>
 //                   <input
 //                     type="number"
 //                     name="deductions"
@@ -447,14 +538,22 @@
 //                     onKeyDown={preventNonNumericInput}
 //                     min="0"
 //                     step="0.01"
-//                     className={`input-field ${errors.deductions ? 'border-red-500' : ''}`}
+//                     className={`input-field ${
+//                       errors.deductions ? "border-red-500" : ""
+//                     }`}
 //                     placeholder="0.00"
 //                     disabled={submitting}
 //                   />
-//                   {errors.deductions && <p className="text-red-500 text-xs mt-1">{errors.deductions}</p>}
+//                   {errors.deductions && (
+//                     <p className="text-red-500 text-xs mt-1">
+//                       {errors.deductions}
+//                     </p>
+//                   )}
 //                 </div>
 //                 <div>
-//                   <label className="block text-sm font-medium text-gray-700 mb-1">OT Hours</label>
+//                   <label className="block text-sm font-medium text-gray-700 mb-1">
+//                     OT Hours
+//                   </label>
 //                   <input
 //                     type="number"
 //                     name="otHours"
@@ -463,53 +562,85 @@
 //                     onKeyDown={preventNonNumericInput}
 //                     min="0"
 //                     step="0.5"
-//                     className={`input-field ${errors.otHours ? 'border-red-500' : ''}`}
+//                     className={`input-field ${
+//                       errors.otHours ? "border-red-500" : ""
+//                     }`}
 //                     placeholder="0"
 //                     disabled={submitting}
 //                   />
-//                   {errors.otHours && <p className="text-red-500 text-xs mt-1">{errors.otHours}</p>}
+//                   {errors.otHours && (
+//                     <p className="text-red-500 text-xs mt-1">
+//                       {errors.otHours}
+//                     </p>
+//                   )}
 //                 </div>
 //                 <div>
-//                   <label className="block text-sm font-medium text-gray-700 mb-1">Payment Date *</label>
+//                   <label className="block text-sm font-medium text-gray-700 mb-1">
+//                     Payment Date *
+//                   </label>
 //                   <input
 //                     type="date"
 //                     name="paymentDate"
 //                     value={formData.paymentDate}
 //                     onChange={handleChange}
 //                     max={today}
-//                     className={`input-field ${errors.paymentDate ? 'border-red-500' : ''}`}
+//                     className={`input-field ${
+//                       errors.paymentDate ? "border-red-500" : ""
+//                     }`}
 //                     required
 //                     disabled={submitting}
 //                   />
-//                   {errors.paymentDate && <p className="text-red-500 text-xs mt-1">{errors.paymentDate}</p>}
-//                   <p className="text-xs text-gray-500 mt-1">Select a past date</p>
+//                   {errors.paymentDate && (
+//                     <p className="text-red-500 text-xs mt-1">
+//                       {errors.paymentDate}
+//                     </p>
+//                   )}
+//                   <p className="text-xs text-gray-500 mt-1">
+//                     Select a past date
+//                   </p>
 //                 </div>
 //               </div>
 
 //               {/* Salary Calculation Preview */}
 //               <div className="bg-gray-50 p-4 rounded-lg mb-4">
-//                 <h4 className="font-semibold mb-2">Salary Calculation Preview</h4>
+//                 <h4 className="font-semibold mb-2">
+//                   Salary Calculation Preview
+//                 </h4>
 //                 <div className="grid grid-cols-2 gap-2 text-sm">
 //                   <div>Basic Salary:</div>
-//                   <div className="text-right">Rs {parseFloat(formData.basicSalary || 0).toLocaleString()}</div>
+//                   <div className="text-right">
+//                     Rs {parseFloat(formData.basicSalary || 0).toLocaleString()}
+//                   </div>
 
 //                   <div>OT Pay:</div>
-//                   <div className="text-right">Rs {calculatedSalary.otPay.toLocaleString()}</div>
+//                   <div className="text-right">
+//                     Rs {calculatedSalary.otPay.toLocaleString()}
+//                   </div>
 
 //                   <div>Allowances:</div>
-//                   <div className="text-right">Rs {parseFloat(formData.allowances || 0).toLocaleString()}</div>
+//                   <div className="text-right">
+//                     Rs {parseFloat(formData.allowances || 0).toLocaleString()}
+//                   </div>
 
 //                   <div>Deductions:</div>
-//                   <div className="text-right">Rs {parseFloat(formData.deductions || 0).toLocaleString()}</div>
+//                   <div className="text-right">
+//                     Rs {parseFloat(formData.deductions || 0).toLocaleString()}
+//                   </div>
 
 //                   <div>EPF Deduction:</div>
-//                   <div className="text-right">Rs {calculatedSalary.epfDeduction.toLocaleString()}</div>
+//                   <div className="text-right">
+//                     Rs {calculatedSalary.epfDeduction.toLocaleString()}
+//                   </div>
 
 //                   <div>ETF Deduction:</div>
-//                   <div className="text-right">Rs {calculatedSalary.etfDeduction.toLocaleString()}</div>
+//                   <div className="text-right">
+//                     Rs {calculatedSalary.etfDeduction.toLocaleString()}
+//                   </div>
 
 //                   <div className="font-semibold">Net Salary:</div>
-//                   <div className="text-right font-semibold">Rs {calculatedSalary.netSalary.toLocaleString()}</div>
+//                   <div className="text-right font-semibold">
+//                     Rs {calculatedSalary.netSalary.toLocaleString()}
+//                   </div>
 //                 </div>
 //               </div>
 
@@ -530,7 +661,7 @@
 //                   className="btn-primary"
 //                   disabled={submitting}
 //                 >
-//                   {submitting ? 'Adding...' : 'Add Salary'}
+//                   {submitting ? "Adding..." : "Add Salary"}
 //                 </button>
 //               </div>
 //             </form>
@@ -544,7 +675,6 @@
 // export default Salaries;
 
 
-// frontend/src/pages/financialmanager/Incomes.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -558,11 +688,15 @@ import {
 
 const Salaries = () => {
   const [salaries, setSalaries] = useState([]);
+  const [employees, setEmployees] = useState([]); // NEW: employees list
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+
   const [formData, setFormData] = useState({
+    employeeId: "",       // NEW: selected employee id
     employeeName: "",
     role: "",
+    department: "",       // NEW: snapshot
     basicSalary: "",
     allowances: "0",
     deductions: "0",
@@ -572,18 +706,32 @@ const Salaries = () => {
     epfRate: "8",
     etfRate: "12",
   });
+
   const [calculatedSalary, setCalculatedSalary] = useState({
     otPay: 0,
     epfDeduction: 0,
     etfDeduction: 0,
     netSalary: 0,
   });
+
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
-  const [updatingStatus, setUpdatingStatus] = useState(null); // Track which salary status is being updated
+  const [updatingStatus, setUpdatingStatus] = useState(null);
 
-  // Get today's date for validation
   const today = new Date().toISOString().split("T")[0];
+
+  // Ensure Authorization header is set
+  useEffect(() => {
+    const saved = localStorage.getItem("user");
+    if (saved) {
+      try {
+        const user = JSON.parse(saved);
+        if (user?.token) {
+          axios.defaults.headers.common["Authorization"] = `Bearer ${user.token}`;
+        }
+      } catch {}
+    }
+  }, []);
 
   useEffect(() => {
     fetchSalaries();
@@ -592,6 +740,16 @@ const Salaries = () => {
   useEffect(() => {
     calculateSalary();
   }, [formData]);
+
+  const fetchEmployees = async () => {
+    try {
+      const res = await axios.get("/api/employees/all");
+      setEmployees(res.data.employees || []);
+    } catch (err) {
+      console.error("Failed to load employees", err);
+      toast.error("Failed to load employees");
+    }
+  };
 
   const fetchSalaries = async () => {
     try {
@@ -615,19 +773,14 @@ const Salaries = () => {
     const epfRate = parseFloat(formData.epfRate) || 8;
     const etfRate = parseFloat(formData.etfRate) || 3;
 
-    // Calculate hourly rate (assuming 160 work hours per month)
     const hourlyRate = basicSalary / 160;
-
-    // Calculate OT Pay
     const otPay = otHours * hourlyRate * otRate;
 
-    // Calculate EPF & ETF deductions
     const epfDeduction = (basicSalary + otPay) * (epfRate / 100);
     const etfDeduction = (basicSalary + otPay) * (etfRate / 100);
 
-    // Calculate Net Salary
     const netSalary =
-      basicSalary + otPay + allowances - (deductions + epfDeduction);
+      basicSalary + otPay + allowances - (deductions + epfDeduction + etfDeduction);
 
     setCalculatedSalary({
       otPay,
@@ -637,60 +790,88 @@ const Salaries = () => {
     });
   };
 
+  // Open form and load employees list (once)
+  const handleOpenForm = async () => {
+    setShowForm(true);
+    if (employees.length === 0) {
+      await fetchEmployees();
+    }
+  };
+
   const validateForm = () => {
     const newErrors = {};
 
-    // Employee name validation
-    if (!formData.employeeName.trim()) {
-      newErrors.employeeName = "Employee name is required";
-    } else if (!validateText(formData.employeeName)) {
-      newErrors.employeeName = "Employee name cannot contain numbers";
-    } else if (formData.employeeName.length > 20) {
-      newErrors.employeeName = "Employee name cannot exceed 20 characters";
+    // If no employee selected, require manual name/role
+    if (!formData.employeeId) {
+      if (!formData.employeeName.trim()) {
+        newErrors.employeeName = "Employee name is required";
+      } else if (!validateText(formData.employeeName)) {
+        newErrors.employeeName = "Employee name cannot contain numbers";
+      } else if (formData.employeeName.length > 50) {
+        newErrors.employeeName = "Employee name cannot exceed 50 characters";
+      }
+
+      if (!formData.role.trim()) {
+        newErrors.role = "Role is required";
+      } else if (!validateText(formData.role)) {
+        newErrors.role = "Role cannot contain numbers";
+      }
     }
 
-    // Role validation
-    if (!formData.role.trim()) {
-      newErrors.role = "Role is required";
-    } else if (!validateText(formData.role)) {
-      newErrors.role = "Role cannot contain numbers";
-    }
-
-    // Basic salary validation
     if (!formData.basicSalary || !validateNumber(formData.basicSalary)) {
       newErrors.basicSalary = "Basic salary must be a positive number";
     } else if (parseFloat(formData.basicSalary) <= 0) {
       newErrors.basicSalary = "Basic salary must be greater than 0";
     }
 
-    // Allowances validation
-    if (formData.allowances && !validateNumber(formData.allowances)) {
-      newErrors.allowances = "Allowances must be a non-negative number";
-    }
-
-    // Deductions validation
-    if (formData.deductions && !validateNumber(formData.deductions)) {
-      newErrors.deductions = "Deductions must be a non-negative number";
-    }
-
-    // Payment date validation - allow past dates (remove 7-day restriction for salaries)
     if (!formData.paymentDate) {
       newErrors.paymentDate = "Payment date is required";
     } else {
       const inputDate = new Date(formData.paymentDate);
-      const today = new Date();
-      if (inputDate > today) {
+      const dtToday = new Date();
+      if (inputDate > dtToday) {
         newErrors.paymentDate = "Payment date cannot be in the future";
       }
     }
 
-    // OT hours validation
+    if (formData.allowances && !validateNumber(formData.allowances)) {
+      newErrors.allowances = "Allowances must be a non-negative number";
+    }
+
+    if (formData.deductions && !validateNumber(formData.deductions)) {
+      newErrors.deductions = "Deductions must be a non-negative number";
+    }
+
     if (formData.otHours && !validateNumber(formData.otHours)) {
       newErrors.otHours = "OT hours must be a non-negative number";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleEmployeeChange = (e) => {
+    const selectedId = e.target.value;
+    const emp = employees.find((x) => x._id === selectedId);
+    if (emp) {
+      setFormData((prev) => ({
+        ...prev,
+        employeeId: selectedId,
+        employeeName: emp.name,          // snapshot
+        role: emp.position,              // snapshot
+        department: emp.department || "",// snapshot
+      }));
+      setErrors((prev) => ({ ...prev, employeeName: "", role: "" }));
+    } else {
+      // cleared selection
+      setFormData((prev) => ({
+        ...prev,
+        employeeId: "",
+        employeeName: "",
+        role: "",
+        department: "",
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -704,9 +885,11 @@ const Salaries = () => {
     setSubmitting(true);
 
     try {
-      const salaryData = {
-        employeeName: formData.employeeName.trim(),
+      const payload = {
+        employeeId: formData.employeeId || undefined,
+        employeeName: formData.employeeId ? formData.employeeName : formData.employeeName.trim(),
         role: formData.role.trim(),
+        department: formData.department || "",
         basicSalary: parseFloat(formData.basicSalary),
         allowances: parseFloat(formData.allowances || 0),
         deductions: parseFloat(formData.deductions || 0),
@@ -717,16 +900,16 @@ const Salaries = () => {
         paymentDate: formData.paymentDate,
       };
 
-      console.log("Sending salary data:", salaryData);
-
-      const response = await axios.post("/api/salaries", salaryData);
+      const response = await axios.post("/api/salaries", payload);
 
       if (response.data.success) {
         toast.success("Salary added successfully");
         setShowForm(false);
         setFormData({
+          employeeId: "",
           employeeName: "",
           role: "",
+          department: "",
           basicSalary: "",
           allowances: "0",
           deductions: "0",
@@ -750,9 +933,7 @@ const Salaries = () => {
       } else if (error.response?.data?.error) {
         toast.error(`Server Error: ${error.response.data.error}`);
       } else {
-        toast.error(
-          "Failed to add salary. Please check your connection and try again."
-        );
+        toast.error("Failed to add salary. Please check your connection and try again.");
       }
     } finally {
       setSubmitting(false);
@@ -761,23 +942,21 @@ const Salaries = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [name]: value,
-    });
+    }));
 
-    // Clear error when user starts typing
     if (errors[name]) {
-      setErrors({
-        ...errors,
+      setErrors((prev) => ({
+        ...prev,
         [name]: "",
-      });
+      }));
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this salary record?"))
-      return;
+    if (!window.confirm("Are you sure you want to delete this salary record?")) return;
 
     try {
       await axios.delete(`/api/salaries/${id}`);
@@ -791,7 +970,7 @@ const Salaries = () => {
 
   const updateSalaryStatus = async (id, status) => {
     try {
-      setUpdatingStatus(id); // Set the ID of the salary being updated
+      setUpdatingStatus(id);
       await axios.put(`/api/salaries/${id}/status`, { status });
       toast.success("Salary status updated successfully");
       fetchSalaries();
@@ -799,7 +978,7 @@ const Salaries = () => {
       toast.error("Failed to update salary status");
       console.error("Error updating salary status:", error);
     } finally {
-      setUpdatingStatus(null); // Reset updating status
+      setUpdatingStatus(null);
     }
   };
 
@@ -815,25 +994,17 @@ const Salaries = () => {
     <div className="container mx-auto px-4 py-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-blue-800">Salaries</h1>
-        <button
-          onClick={() => setShowForm(true)}
-          className="btn-primary"
-          disabled={submitting}
-        >
+        <button onClick={handleOpenForm} className="btn-primary" disabled={submitting}>
           {submitting ? "Processing..." : "Add Salary"}
         </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="card">
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">
-            Total Salaries
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">Total Salaries</h3>
           <p className="text-2xl font-bold text-purple-600">
             Rs{" "}
-            {salaries
-              .reduce((sum, salary) => sum + (salary.netSalary || 0), 0)
-              .toLocaleString()}
+            {salaries.reduce((sum, salary) => sum + (salary.netSalary || 0), 0).toLocaleString()}
           </p>
         </div>
       </div>
@@ -869,23 +1040,17 @@ const Salaries = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {salaries.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan="7"
-                    className="px-6 py-4 text-center text-gray-500"
-                  >
-                    No salary records found. Add your first salary record to get
-                    started.
+                  <td colSpan="7" className="px-6 py-4 text-center text-gray-500">
+                    No salary records found. Add your first salary record to get started.
                   </td>
                 </tr>
               ) : (
                 salaries.map((salary) => (
                   <tr key={salary._id}>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {salary.employeeName}
+                      {salary.employeeName || salary.employeeId?.name || "-"}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {salary.role}
-                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">{salary.role}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       Rs {salary.basicSalary?.toLocaleString() || "0"}
                     </td>
@@ -922,13 +1087,10 @@ const Salaries = () => {
                             : "text-blue-600 hover:text-blue-900"
                         }`}
                         disabled={
-                          salary.status === "Paid" ||
-                          updatingStatus === salary._id
+                          salary.status === "Paid" || updatingStatus === salary._id
                         }
                       >
-                        {updatingStatus === salary._id
-                          ? "Updating..."
-                          : "Mark as Paid"}
+                        {updatingStatus === salary._id ? "Updating..." : "Mark as Paid"}
                       </button>
                       <button
                         onClick={() => handleDelete(salary._id)}
@@ -959,67 +1121,108 @@ const Salaries = () => {
                 className="text-gray-500 hover:text-gray-700"
                 disabled={submitting}
               >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
+                {/* Employee selector (recommended) */}
+                <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Employee Name *
+                    Select Employee (recommended)
                   </label>
-                  <input
-                    type="text"
-                    name="employeeName"
-                    value={formData.employeeName}
-                    onChange={handleChange}
-                    onKeyDown={preventNumericInput}
-                    className={`input-field ${
-                      errors.employeeName ? "border-red-500" : ""
-                    }`}
-                    placeholder="Enter employee name"
-                    required
-                    disabled={submitting}
-                  />
-                  {errors.employeeName && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {errors.employeeName}
-                    </p>
-                  )}
+                  <select
+                    name="employeeId"
+                    value={formData.employeeId}
+                    onChange={handleEmployeeChange}
+                    className="input-field"
+                  >
+                    <option value="">-- Select employee --</option>
+                    {employees.map((emp) => (
+                      <option key={emp._id} value={emp._id}>
+                        {emp.employeeID} — {emp.name} ({emp.department})
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Selecting an employee auto-fills Role/Department and stores a snapshot.
+                  </p>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Role *
-                  </label>
-                  <input
-                    type="text"
-                    name="role"
-                    value={formData.role}
-                    onChange={handleChange}
-                    className={`input-field ${
-                      errors.role ? "border-red-500" : ""
-                    }`}
-                    placeholder="Enter employee role"
-                    required
-                    disabled={submitting}
-                  />
-                  {errors.role && (
-                    <p className="text-red-500 text-xs mt-1">{errors.role}</p>
-                  )}
-                </div>
+
+                {/* Manual name/role when no employee is selected */}
+                {!formData.employeeId && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Employee Name *
+                      </label>
+                      <input
+                        type="text"
+                        name="employeeName"
+                        value={formData.employeeName}
+                        onChange={handleChange}
+                        onKeyDown={preventNumericInput}
+                        className={`input-field ${errors.employeeName ? "border-red-500" : ""}`}
+                        placeholder="Enter employee name"
+                        required
+                        disabled={submitting}
+                      />
+                      {errors.employeeName && (
+                        <p className="text-red-500 text-xs mt-1">{errors.employeeName}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Role *
+                      </label>
+                      <input
+                        type="text"
+                        name="role"
+                        value={formData.role}
+                        onChange={handleChange}
+                        className={`input-field ${errors.role ? "border-red-500" : ""}`}
+                        placeholder="Enter employee role"
+                        required
+                        disabled={submitting}
+                      />
+                      {errors.role && <p className="text-red-500 text-xs mt-1">{errors.role}</p>}
+                    </div>
+                  </>
+                )}
+
+                {/* Read-only snapshots when employee selected */}
+                {formData.employeeId && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Role (snapshot)
+                      </label>
+                      <input
+                        type="text"
+                        name="role"
+                        value={formData.role}
+                        readOnly
+                        className="input-field bg-gray-100"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Department (snapshot)
+                      </label>
+                      <input
+                        type="text"
+                        name="department"
+                        value={formData.department}
+                        readOnly
+                        className="input-field bg-gray-100"
+                      />
+                    </div>
+                  </>
+                )}
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Basic Salary (Rs) *
@@ -1032,19 +1235,16 @@ const Salaries = () => {
                     onKeyDown={preventNonNumericInput}
                     min="0"
                     step="0.01"
-                    className={`input-field ${
-                      errors.basicSalary ? "border-red-500" : ""
-                    }`}
+                    className={`input-field ${errors.basicSalary ? "border-red-500" : ""}`}
                     placeholder="0.00"
                     required
                     disabled={submitting}
                   />
                   {errors.basicSalary && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {errors.basicSalary}
-                    </p>
+                    <p className="text-red-500 text-xs mt-1">{errors.basicSalary}</p>
                   )}
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Allowances (Rs)
@@ -1057,18 +1257,12 @@ const Salaries = () => {
                     onKeyDown={preventNonNumericInput}
                     min="0"
                     step="0.01"
-                    className={`input-field ${
-                      errors.allowances ? "border-red-500" : ""
-                    }`}
+                    className="input-field"
                     placeholder="0.00"
                     disabled={submitting}
                   />
-                  {errors.allowances && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {errors.allowances}
-                    </p>
-                  )}
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Deductions (Rs)
@@ -1081,18 +1275,12 @@ const Salaries = () => {
                     onKeyDown={preventNonNumericInput}
                     min="0"
                     step="0.01"
-                    className={`input-field ${
-                      errors.deductions ? "border-red-500" : ""
-                    }`}
+                    className="input-field"
                     placeholder="0.00"
                     disabled={submitting}
                   />
-                  {errors.deductions && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {errors.deductions}
-                    </p>
-                  )}
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     OT Hours
@@ -1105,18 +1293,12 @@ const Salaries = () => {
                     onKeyDown={preventNonNumericInput}
                     min="0"
                     step="0.5"
-                    className={`input-field ${
-                      errors.otHours ? "border-red-500" : ""
-                    }`}
+                    className="input-field"
                     placeholder="0"
                     disabled={submitting}
                   />
-                  {errors.otHours && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {errors.otHours}
-                    </p>
-                  )}
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Payment Date *
@@ -1127,28 +1309,20 @@ const Salaries = () => {
                     value={formData.paymentDate}
                     onChange={handleChange}
                     max={today}
-                    className={`input-field ${
-                      errors.paymentDate ? "border-red-500" : ""
-                    }`}
+                    className={`input-field ${errors.paymentDate ? "border-red-500" : ""}`}
                     required
                     disabled={submitting}
                   />
                   {errors.paymentDate && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {errors.paymentDate}
-                    </p>
+                    <p className="text-red-500 text-xs mt-1">{errors.paymentDate}</p>
                   )}
-                  <p className="text-xs text-gray-500 mt-1">
-                    Select a past date
-                  </p>
+                  <p className="text-xs text-gray-500 mt-1">Select a past date</p>
                 </div>
               </div>
 
               {/* Salary Calculation Preview */}
               <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                <h4 className="font-semibold mb-2">
-                  Salary Calculation Preview
-                </h4>
+                <h4 className="font-semibold mb-2">Salary Calculation Preview</h4>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>Basic Salary:</div>
                   <div className="text-right">
@@ -1199,11 +1373,7 @@ const Salaries = () => {
                 >
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  className="btn-primary"
-                  disabled={submitting}
-                >
+                <button type="submit" className="btn-primary" disabled={submitting}>
                   {submitting ? "Adding..." : "Add Salary"}
                 </button>
               </div>
