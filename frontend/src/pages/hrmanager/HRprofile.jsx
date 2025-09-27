@@ -1,5 +1,4 @@
 //frontend/src/dashboards/HRmanager/HRprofile.jsx
-
 import React, { useState, useEffect } from "react";
 import {
   FiUser,
@@ -14,32 +13,40 @@ import {
   FiLogOut,
 } from "react-icons/fi";
 import axios from "axios";
-// ✅ FIXED: Using the same import pattern as your UpdateEmployee.jsx
 import Sidebar from "./HRsidebar";
 
-const backendUrl = "http://localhost:5000"; // use your .env in prod
+const backendUrl = "http://localhost:5000";
 
-// Sign Out Handler (inline, consistent with Navbar)
+// Read token from "token" or "user.token"
+function getAuthToken() {
+  const direct = localStorage.getItem("token");
+  if (direct) return direct;
+  try {
+    const raw = localStorage.getItem("user");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed?.token) return parsed.token;
+    }
+  } catch {}
+  return null;
+}
+
 const handleSignOut = async () => {
   try {
-    const token = localStorage.getItem("token");
-    await fetch("http://localhost:5000/api/auth/signout", {
+    const token = getAuthToken();
+    await fetch(`${backendUrl}/api/auth/signout`, {
       method: "POST",
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
   } catch (_) {
-    // ignore
   } finally {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     localStorage.removeItem("userName");
     localStorage.removeItem("email");
     localStorage.removeItem("role");
-    localStorage.removeItem("user");
-
-    // Dispatch auth update event
     window.dispatchEvent(new Event("auth:update"));
-
-    window.location.href = "/login"; // or use navigate("/login") if available
+    window.location.href = "/login";
   }
 };
 
@@ -67,98 +74,12 @@ function renderRoleFields(
   editedRoleData,
   onChangeRoleField
 ) {
-  if (!roleData && !editedRoleData) return null;
   const data = isEditing ? editedRoleData : roleData;
+  const r = String(role || "").toLowerCase();
+  if (!data) return null;
 
-  switch (role) {
-    case "shopowner":
-      return (
-        <>
-          <ProfileField
-            icon={<FiPhone className="mr-2" />}
-            label="Contact Number"
-            value={data?.contactNumber}
-            isEditing={isEditing}
-            inputProps={{
-              name: "contactNumber",
-              value: data?.contactNumber || "",
-              onChange: onChangeRoleField,
-            }}
-          />
-          <ProfileField
-            icon={<FiMapPin className="mr-2" />}
-            label="Address"
-            value={data?.address}
-            isEditing={isEditing}
-            inputProps={{
-              name: "address",
-              value: data?.address || "",
-              onChange: onChangeRoleField,
-            }}
-          />
-          <ProfileField
-            icon={<FiBriefcase className="mr-2" />}
-            label="Shop Type"
-            value={data?.ShopType}
-            isEditing={isEditing}
-            inputProps={{
-              name: "ShopType",
-              value: data?.ShopType || "",
-              onChange: onChangeRoleField,
-            }}
-          />
-          <ProfileField
-            icon={<FiBriefcase className="mr-2" />}
-            label="Shop Name"
-            value={data?.ShopName}
-            isEditing={isEditing}
-            inputProps={{
-              name: "ShopName",
-              value: data?.ShopName || "",
-              onChange: onChangeRoleField,
-            }}
-          />
-        </>
-      );
-    case "supplier":
-      return (
-        <>
-          <ProfileField
-            icon={<FiBriefcase className="mr-2" />}
-            label="Company Name"
-            value={data?.companyName}
-            isEditing={isEditing}
-            inputProps={{
-              name: "companyName",
-              value: data?.companyName || "",
-              onChange: onChangeRoleField,
-            }}
-          />
-          <ProfileField
-            icon={<FiPhone className="mr-2" />}
-            label="Contact Number"
-            value={data?.contactNumber}
-            isEditing={isEditing}
-            inputProps={{
-              name: "contactNumber",
-              value: data?.contactNumber || "",
-              onChange: onChangeRoleField,
-            }}
-          />
-          <ProfileField
-            icon={<FiMapPin className="mr-2" />}
-            label="Address"
-            value={data?.address}
-            isEditing={isEditing}
-            inputProps={{
-              name: "address",
-              value: data?.address || "",
-              onChange: onChangeRoleField,
-            }}
-          />
-        </>
-      );
-    case "HRmanager":
+  switch (r) {
+    case "hrmanager":
     case "financialmanager":
     case "ordersupplymanager":
     case "deliverymanager":
@@ -169,7 +90,7 @@ function renderRoleFields(
             icon={<FiBriefcase className="mr-2" />}
             label="Department"
             value={data?.department}
-            // isEditing={isEditing} // Department not editable
+            isEditing={isEditing}
             inputProps={{
               name: "department",
               value: data?.department || "",
@@ -205,14 +126,13 @@ function renderRoleFields(
   }
 }
 
-const UserProfile = () => {
+const HRprofile = () => {
   const [user, setUser] = useState(null);
-  const [roleData, setRoleData] = useState(null);
+  const [roleData, setRoleData] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState({});
   const [editedRoleData, setEditedRoleData] = useState({});
 
-  // Password section state
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -221,61 +141,77 @@ const UserProfile = () => {
   });
   const [passwordLoading, setPasswordLoading] = useState(false);
 
-  // Loading and saving states
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Current user info
-  const currentUser = {
-    login: "isuru-bimsara",
-    currentDateTime: "2025-09-21 07:28:03",
-  };
+  useEffect(() => {
+    const token = getAuthToken();
+    if (token) axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+  }, []);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
+      const token = getAuthToken();
+      if (!token) {
+        window.location.href = "/login";
+        return;
+      }
       try {
         setIsLoading(true);
-        const token = localStorage.getItem("token");
+        const { data } = await axios.get(`${backendUrl}/api/users/profile`);
 
-        if (!token) {
-          window.location.href = "/login";
-          return;
+        // Accept both shapes:
+        // 1) { user: { name|username, email, role }, roleData? }
+        // 2) flat: { _id, username, email, role } (older controller)
+        let normalized;
+        let roleDataPayload = data.roleData || {};
+        if (data?.user) {
+          normalized = {
+            _id: data.user._id,
+            name: data.user.name || data.user.username || "",
+            email: data.user.email || "",
+            role: data.user.role || "",
+          };
+        } else {
+          normalized = {
+            _id: data._id,
+            name: data.name || data.username || "",
+            email: data.email || "",
+            role: data.role || "",
+          };
         }
 
-        const { data } = await axios.get(`${backendUrl}/api/user/profile`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (data.user) {
-          setUser(data.user);
-          setRoleData(data.roleData || {});
-        }
-      } catch (error) {
-        console.error("Failed to load profile data:", error);
-        if (error.response?.status === 401) {
+        setUser(normalized);
+        setRoleData(roleDataPayload);
+      } catch (err) {
+        console.error(
+          "Profile load error:",
+          err?.response?.status,
+          err?.response?.data
+        );
+        if (err?.response?.status === 401) {
           localStorage.removeItem("token");
+          localStorage.removeItem("user");
           window.location.href = "/login";
         } else {
-          alert("Failed to load profile data");
+          alert(err?.response?.data?.message || "Failed to load profile data");
         }
       } finally {
         setIsLoading(false);
       }
     };
-
     fetchUserProfile();
   }, []);
 
-  // When entering edit mode, copy current data to edit state
   const startEdit = () => {
-    setEditedUser(user);
+    setEditedUser(user || {});
     setEditedRoleData(roleData || {});
     setIsEditing(true);
   };
 
   const cancelEdit = () => {
     setIsEditing(false);
-    setEditedUser(user);
+    setEditedUser(user || {});
     setEditedRoleData(roleData || {});
   };
 
@@ -289,108 +225,91 @@ const UserProfile = () => {
     setEditedRoleData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Enhanced saveProfile function with proper event dispatching
   const saveProfile = async () => {
     try {
       setIsSaving(true);
-      const token = localStorage.getItem("token");
-
+      const payload = {
+        name: editedUser.name,
+        email: editedUser.email,
+        roleSpecific: editedRoleData,
+      };
       const { data } = await axios.put(
-        `${backendUrl}/api/user/profile`,
-        {
-          name: editedUser.name,
-          email: editedUser.email,
-          roleSpecific: editedRoleData,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
+        `${backendUrl}/api/users/profile`,
+        payload
       );
 
-      // Update local state
-      setUser(data.user);
-      setRoleData(data.roleData || {});
+      // Accept both shapes again
+      let updatedUser;
+      let updatedRoleData = data.roleData || {};
+      if (data?.user) {
+        updatedUser = {
+          _id: data.user._id,
+          name: data.user.name,
+          email: data.user.email,
+          role: data.user.role,
+        };
+      } else {
+        updatedUser = {
+          _id: data._id,
+          name: data.name || data.username,
+          email: data.email,
+          role: data.role,
+        };
+      }
+
+      setUser(updatedUser);
+      setRoleData(updatedRoleData);
       setIsEditing(false);
 
-      // Update localStorage to keep data in sync
-      localStorage.setItem("userName", data.user.name || "");
-      localStorage.setItem("email", data.user.email || "");
-      localStorage.setItem("role", data.user.role || "");
-
-      // Dispatch event to notify Navbar about profile update
+      localStorage.setItem("userName", updatedUser.name || "");
+      localStorage.setItem("email", updatedUser.email || "");
+      localStorage.setItem("role", updatedUser.role || "");
       window.dispatchEvent(new Event("profile:updated"));
-
-      alert("Profile updated successfully!");
+      alert(data.message || "Profile updated successfully!");
     } catch (error) {
-      console.error("Failed to update profile:", error);
-      alert(error.response?.data?.message || "Failed to update profile.");
+      alert(error?.response?.data?.message || "Failed to update profile.");
     } finally {
       setIsSaving(false);
     }
   };
 
-  // Password Change Handlers
-  const handlePasswordInput = (e) => {
-    const { name, value } = e.target;
-    setPasswordData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // Enhanced password change with event dispatching
   const handlePasswordChange = async (e) => {
     e.preventDefault();
-
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       alert("New passwords do not match");
       return;
     }
-
     if (passwordData.newPassword.length < 6) {
       alert("Password must be at least 6 characters");
       return;
     }
-
     try {
       setPasswordLoading(true);
-      const token = localStorage.getItem("token");
-
       const { data } = await axios.put(
-        `${backendUrl}/api/user/update-password`,
+        `${backendUrl}/api/users/update-password`,
         {
           currentPassword: passwordData.currentPassword,
           newPassword: passwordData.newPassword,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
+        }
       );
-
       alert(data.message || "Password updated successfully!");
-
-      // Reset password form
       setPasswordData({
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
       });
       setShowPasswordForm(false);
-
-      // Dispatch event if password change affects user data
       window.dispatchEvent(new Event("profile:updated"));
     } catch (error) {
-      console.error("Password update failed:", error);
       alert(
-        error.response?.data?.message ||
-          "Failed to update password. Please check your current password."
+        error?.response?.data?.message ||
+          "Failed to update password. Check your current password."
       );
     } finally {
       setPasswordLoading(false);
     }
   };
 
-  // Enhanced sign out handler
-  const handleSignOutLocal = async () => {
-    if (window.confirm("Are you sure you want to sign out?")) {
-      await handleSignOut();
-    }
-  };
-
-  // Show loading state
   if (isLoading) {
     return (
       <div className="flex h-screen bg-gray-50">
@@ -413,36 +332,34 @@ const UserProfile = () => {
     return (
       <div className="flex h-screen bg-gray-50">
         <Sidebar />
-        <div className="flex-1 overflow-y-auto">
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <div className="text-xl text-red-600 mb-4">
-                Failed to load profile data
-              </div>
-              <button
-                onClick={() => window.location.reload()}
-                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Retry
-              </button>
+        <div className="flex-1 overflow-y-auto flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-xl text-red-600 mb-4">
+              Failed to load profile
             </div>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Retry
+            </button>
           </div>
         </div>
       </div>
     );
   }
 
-  return (
-    // ✅ FIXED SCROLL LAYOUT: h-screen container, overflow-y-auto on main content only
-    <div className="flex h-screen bg-gray-50">
-      {/* ✅ FIXED SIDEBAR */}
-      <Sidebar />
+  const currentUserBanner = {
+    login: "isuru-bimsara",
+    currentDateTime: new Date().toISOString().slice(0, 19).replace("T", " "),
+  };
 
-      {/* ✅ SCROLLABLE MAIN CONTENT */}
+  return (
+    <div className="flex h-screen bg-gray-50">
+      <Sidebar />
       <div className="flex-1 overflow-y-auto">
         <div className="p-8">
           <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
-            {/* Profile Header */}
             <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-12 flex items-center gap-8 relative">
               <div className="rounded-full bg-white w-32 h-32 flex items-center justify-center">
                 <FiUser className="text-6xl text-blue-600" />
@@ -459,23 +376,24 @@ const UserProfile = () => {
                   {user.email || "user@example.com"}
                 </div>
                 <div className="text-blue-100 mt-2 text-xs">
-                  Login: {currentUser.login} | {currentUser.currentDateTime} UTC
+                  Login: {currentUserBanner.login} |{" "}
+                  {currentUserBanner.currentDateTime} UTC
                 </div>
               </div>
               <button
-                onClick={handleSignOutLocal}
-                className="absolute right-10 top-10 group bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg active:scale-95"
-                title="Sign Out"
+                onClick={async () => {
+                  if (window.confirm("Are you sure you want to sign out?"))
+                    await handleSignOut();
+                }}
+                className="absolute right-10 top-10 group bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg transition-all"
               >
                 <div className="flex items-center">
                   <FiLogOut className="mr-3 text-lg group-hover:animate-pulse" />
                   <span className="text-lg">Sign Out</span>
                 </div>
-                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 rounded-lg transition-opacity duration-300"></div>
               </button>
             </div>
 
-            {/* Profile Details */}
             <div className="px-12 py-10">
               <div className="flex justify-between items-center mb-8">
                 <h2 className="text-3xl font-bold text-gray-800">
@@ -485,35 +403,31 @@ const UserProfile = () => {
                   <button
                     className="flex items-center text-blue-600 hover:text-blue-800 font-medium text-lg transition-colors"
                     onClick={startEdit}
-                    disabled={isSaving}
                   >
-                    <FiEdit className="mr-2" />
-                    Edit Profile
+                    <FiEdit className="mr-2" /> Edit Profile
                   </button>
                 ) : (
                   <div className="flex items-center space-x-4">
                     <button
-                      className="flex items-center text-green-600 hover:text-green-800 font-medium text-lg transition-colors disabled:opacity-50"
+                      className="flex items-center text-green-600 hover:text-green-800 font-medium text-lg"
                       onClick={saveProfile}
                       disabled={isSaving}
                     >
-                      <FiSave className="mr-2" />
+                      <FiSave className="mr-2" />{" "}
                       {isSaving ? "Saving..." : "Save"}
                     </button>
                     <button
-                      className="flex items-center text-red-600 hover:text-red-800 font-medium text-lg transition-colors"
+                      className="flex items-center text-red-600 hover:text-red-800 font-medium text-lg"
                       onClick={cancelEdit}
                       disabled={isSaving}
                     >
-                      <FiX className="mr-2" />
-                      Cancel
+                      <FiX className="mr-2" /> Cancel
                     </button>
                   </div>
                 )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                {/* Name */}
                 <ProfileField
                   icon={<FiUser className="mr-2" />}
                   label="Full Name"
@@ -522,12 +436,11 @@ const UserProfile = () => {
                   inputProps={{
                     name: "name",
                     value: editedUser.name || "",
-                    onChange: handleEditUser,
+                    onChange: (e) => handleEditUser(e),
                     required: true,
                   }}
                 />
 
-                {/* Email */}
                 <ProfileField
                   icon={<FiMail className="mr-2" />}
                   label="Email Address"
@@ -537,22 +450,20 @@ const UserProfile = () => {
                     name: "email",
                     type: "email",
                     value: editedUser.email || "",
-                    onChange: handleEditUser,
+                    onChange: (e) => handleEditUser(e),
                     required: true,
                   }}
                 />
 
-                {/* Role-specific fields */}
                 {renderRoleFields(
                   user.role,
                   roleData,
                   isEditing,
                   editedRoleData,
-                  handleEditRoleData
+                  (e) => handleEditRoleData(e)
                 )}
               </div>
 
-              {/* Password Change Section */}
               <div className="border border-gray-200 rounded-lg p-6 mt-8">
                 <div className="flex justify-between items-center mb-4">
                   <div className="flex items-center">
@@ -562,9 +473,8 @@ const UserProfile = () => {
                     </h3>
                   </div>
                   <button
-                    onClick={() => setShowPasswordForm((show) => !show)}
-                    className="text-blue-600 hover:text-blue-800 transition-colors"
-                    disabled={passwordLoading}
+                    onClick={() => setShowPasswordForm((s) => !s)}
+                    className="text-blue-600 hover:text-blue-800"
                   >
                     {showPasswordForm ? "Cancel" : "Change Password"}
                   </button>
@@ -584,8 +494,13 @@ const UserProfile = () => {
                         name="currentPassword"
                         required
                         value={passwordData.currentPassword}
-                        onChange={handlePasswordInput}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        onChange={(e) =>
+                          setPasswordData((p) => ({
+                            ...p,
+                            currentPassword: e.target.value,
+                          }))
+                        }
+                        className="w-full px-4 py-2 border border-gray-300 rounded-md"
                         disabled={passwordLoading}
                       />
                     </div>
@@ -599,8 +514,13 @@ const UserProfile = () => {
                         required
                         minLength={6}
                         value={passwordData.newPassword}
-                        onChange={handlePasswordInput}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        onChange={(e) =>
+                          setPasswordData((p) => ({
+                            ...p,
+                            newPassword: e.target.value,
+                          }))
+                        }
+                        className="w-full px-4 py-2 border border-gray-300 rounded-md"
                         disabled={passwordLoading}
                       />
                     </div>
@@ -613,8 +533,13 @@ const UserProfile = () => {
                         name="confirmPassword"
                         required
                         value={passwordData.confirmPassword}
-                        onChange={handlePasswordInput}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        onChange={(e) =>
+                          setPasswordData((p) => ({
+                            ...p,
+                            confirmPassword: e.target.value,
+                          }))
+                        }
+                        className="w-full px-4 py-2 border border-gray-300 rounded-md"
                         disabled={passwordLoading}
                       />
                     </div>
@@ -622,7 +547,7 @@ const UserProfile = () => {
                       <button
                         type="submit"
                         disabled={passwordLoading}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+                        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
                       >
                         {passwordLoading ? "Updating..." : "Update Password"}
                       </button>
@@ -636,7 +561,7 @@ const UserProfile = () => {
                             confirmPassword: "",
                           });
                         }}
-                        className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors"
+                        className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400"
                         disabled={passwordLoading}
                       >
                         Cancel
@@ -653,4 +578,4 @@ const UserProfile = () => {
   );
 };
 
-export default UserProfile;
+export default HRprofile;
