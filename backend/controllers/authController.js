@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const User = require('../models/user.model');
 const jwt = require('jsonwebtoken');
+const {sendWelcomeEmail } = require('../utils/EmailServices');
 
 // Generate JWT
 const generateToken = (id) => {
@@ -27,6 +28,15 @@ const registerUser = asyncHandler(async (req, res) => {
     const user = await User.create({ username, email, password, role });
 
     if (user) {
+
+        // ✅ Send welcome email
+        try {
+            await sendWelcomeEmail(user.email, user.username);
+        } catch (err) {
+            console.error("⚠️ Failed to send welcome email:", err.message);
+            // Don’t block registration if email fails
+        }
+
         res.status(201).json({
             _id: user.id,
             username: user.username,
