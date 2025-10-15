@@ -1,4 +1,3 @@
-//frontend/src/pages/LoginPage.jsx
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import Card from '../components/common/Card';

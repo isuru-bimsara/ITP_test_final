@@ -18,6 +18,31 @@ const getUserProfile = asyncHandler(async (req, res) => {
     }
 });
 
+const updateUserById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const updates = req.body;
+
+  const user = await User.findById(id);
+
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+
+  // Update allowed fields
+  Object.keys(updates).forEach((key) => {
+    user[key] = updates[key];
+  });
+
+  const updatedUser = await user.save();
+
+  res.json({
+    message: 'User updated successfully',
+    user: updatedUser,
+  });
+});
+
+
 // PUT /api/users/profile
 // Accepts { name, email } — updates username/email (and verifies email uniqueness)
 const updateUserProfile = asyncHandler(async (req, res) => {
@@ -91,5 +116,5 @@ const getUsers = asyncHandler(async (req, res) => {
 });
 
 
-module.exports = { getUserProfile, updateUserProfile, updatePassword, getUsers };
+module.exports = { getUserProfile, updateUserProfile, updatePassword, getUsers , updateUserById };
 

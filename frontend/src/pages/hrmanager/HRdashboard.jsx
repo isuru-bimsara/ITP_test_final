@@ -1,8 +1,8 @@
+// frontend/src/pages/hrmanager/HrDashboard.js
 import React, { useEffect, useState } from "react";
 import Sidebar from "./HRsidebar";
 import axios from "axios";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
+import { createBeautifulEmployeePDF } from "./allpdfGenarator";
 
 const API_URL = "http://localhost:5000/api";
 
@@ -21,13 +21,11 @@ export default function HrDashboard() {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
 
-  // Fallback: ensure axios has Authorization header if AuthProvider hasn't set it yet
+  // Setup axios Authorization header if token exists
   useEffect(() => {
     const localUser = JSON.parse(localStorage.getItem("user"));
-    if (localUser?.token && !axios.defaults.headers.common["Authorization"]) {
-      axios.defaults.headers.common[
-        "Authorization"
-      ] = `Bearer ${localUser.token}`;
+    if (localUser?.token) {
+      axios.defaults.headers.common["Authorization"] = `Bearer ${localUser.token}`;
     }
   }, []);
 
@@ -35,11 +33,10 @@ export default function HrDashboard() {
   useEffect(() => {
     const loadCounts = async () => {
       try {
-        const { data } = await axios.get(
-          `${API_URL}/employees/department-counts`
-        );
+        const { data } = await axios.get(`${API_URL}/employees/department-counts`);
         setDepartmentCounts(data.counts || []);
-      } catch {
+      } catch (error) {
+        console.error("Error fetching department counts:", error);
         setDepartmentCounts([]);
       }
     };
@@ -53,11 +50,10 @@ export default function HrDashboard() {
       try {
         const params = {};
         if (search) params.search = search;
-        const { data } = await axios.get(`${API_URL}/employees/all`, {
-          params,
-        });
+        const { data } = await axios.get(`${API_URL}/employees/all`, { params });
         setAllEmployees(data.employees || []);
-      } catch {
+      } catch (error) {
+        console.error("Error fetching employees:", error);
         setAllEmployees([]);
       }
       setLoading(false);
@@ -65,40 +61,42 @@ export default function HrDashboard() {
     loadEmployees();
   }, [search]);
 
-  const handleGenerateReport = () => {
-    const doc = new jsPDF();
-    doc.text("Employee Report", 14, 10);
+  // ---------------- PDF Generation ----------------
+  const handleGeneratePDF = () => {
+    try {
+      if (allEmployees.length === 0) {
+        alert("No employees to generate PDF!");
+        return;
+      }
 
-    const tableColumn = [
-      "EMPLOYEE ID",
-      "NAME",
-      "POSITION",
-      "DEPARTMENT",
-      "CONTACT",
-      "ADDRESS",
-      "DATE ADDED",
-    ];
-    const tableRows = allEmployees.map((emp) => [
-      emp.employeeID,
-      emp.name,
-      emp.position,
-      emp.department,
-      emp.contactNumber,
-      emp.address,
-      new Date(emp.createdAt).toLocaleDateString(),
-    ]);
+      const currentUser = {
+        name: JSON.parse(localStorage.getItem("user"))?.username || "HR Manager",
+        role: JSON.parse(localStorage.getItem("user"))?.role || "hrmanager",
+        login: JSON.parse(localStorage.getItem("user"))?.email || "unknown",
+      };
 
-    doc.autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: 20,
-      styles: { fontSize: 9 },
-      headStyles: { fillColor: [41, 128, 185] },
-    });
+      // Simple date formatter
+      const formatDate = (dateStr) => {
+        const d = new Date(dateStr);
+        return `${(d.getMonth() + 1).toString().padStart(2, "0")}/${d
+          .getDate()
+          .toString()
+          .padStart(2, "0")}/${d.getFullYear()}`;
+      };
 
-    doc.save("employee_report.pdf");
+      createBeautifulEmployeePDF({
+        employees: allEmployees,
+        department: "All",
+        currentUser,
+        formatDate,
+      });
+    } catch (err) {
+      alert("PDF generation failed: " + err.message);
+      console.error(err);
+    }
   };
 
+  // ---------------- Helpers ----------------
   const getDepartmentCount = (deptName) => {
     const found = departmentCounts.find((dep) => dep._id === deptName);
     return found ? found.count : 0;
@@ -106,20 +104,24 @@ export default function HrDashboard() {
 
   const uniqueDepartments = departmentCounts.map((dep) => dep._id || "Unknown");
 
+  // ---------------- Render ----------------
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
+
       <div className="flex-1 overflow-y-auto">
         <div className="p-10">
+          {/* Header */}
           <header className="flex items-center justify-between mb-8">
             <div>
               <div className="text-3xl font-bold text-gray-900">Overview</div>
               <div className="text-gray-500">Dashboard</div>
             </div>
+
             <div className="flex items-center space-x-4">
               <input
                 type="text"
-                placeholder="Search by id, name, department, etc..."
+                placeholder="Search by ID, name, department, etc..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-100"
@@ -131,6 +133,7 @@ export default function HrDashboard() {
             </div>
           </header>
 
+          {/* Welcome + PDF Button */}
           <div className="mb-8">
             <div className="bg-white rounded-xl shadow p-6 flex items-center justify-between">
               <div>
@@ -148,14 +151,16 @@ export default function HrDashboard() {
               </div>
               <button
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700"
-                onClick={handleGenerateReport}
+                onClick={handleGeneratePDF}
               >
                 Generate Employee Report
               </button>
             </div>
           </div>
 
+          {/* Stats Cards */}
           <div className="grid grid-cols-2 gap-6 mb-8">
+            {/* Total Employees */}
             <div className="bg-white rounded-xl shadow-lg p-8 flex items-center justify-between border-4 border-blue-600">
               <div>
                 <div className="text-2xl font-bold text-gray-800 mb-2">
@@ -191,10 +196,12 @@ export default function HrDashboard() {
             </div>
           </div>
 
+          {/* Employee Table */}
           <div className="bg-white rounded-xl border border-gray-200">
             <div className="px-6 py-4 border-b border-gray-200">
               <h3 className="text-lg font-bold text-gray-900">All Employees</h3>
             </div>
+
             {loading ? (
               <div className="py-10 text-center text-blue-600 font-bold">
                 Loading...
@@ -223,9 +230,7 @@ export default function HrDashboard() {
                         key={emp._id}
                         className="border-b last:border-none hover:bg-blue-50 transition"
                       >
-                        <td className="py-4 px-6 font-semibold">
-                          {emp.employeeID}
-                        </td>
+                        <td className="py-4 px-6 font-semibold">{emp.employeeID}</td>
                         <td className="py-4 px-6">{emp.name}</td>
                         <td className="py-4 px-6">{emp.position}</td>
                         <td className="py-4 px-6">{emp.department}</td>

@@ -17,6 +17,7 @@ const Sidebar = () => {
     { path: '/incomes', name: 'Incomes', icon: <FaMoneyBillWave /> },
     { path: '/salaries', name: 'Salaries', icon: <FaUserTie /> },
     { path: '/tax-compliance', name: 'Tax Compliance', icon: <FaFileInvoiceDollar /> },
+    { path: '/profile', name: 'Profile', icon: <FaUserTie /> },
   ];
 
   return (

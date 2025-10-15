@@ -4,11 +4,29 @@ const bcrypt = require("bcryptjs");
 const userSchema = new mongoose.Schema(
   {
     username: { type: String, required: true, unique: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    email: {
+      type: String,
+      required: [true, "Email is required"],
+      unique: true,
+      match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"],
+    },
+    password: {
+      type: String,
+      required: [true, "Password is required"],
+      minlength: [6, "Password must be at least 6 characters long"],
+    },
+
+    //client details
+    clientcompanyName: { type: String, required: false, trim: true },
+    clientcontactName: { type: String, required: false, trim: true },
+    clientphone: { type: String, required: false, trim: true },
+    clientaddress: { type: String, required: false, trim: true },
+    clientproductCategories: [{ type: String, required: false }],
+    clientisActive: { type: Boolean, default: true },
+
     role: {
       type: String,
-      enum: ["Customer", "Admin", "hrmanager", "financialmanager"],
+      enum: ["Customer", "Admin", "hrmanager", "financialmanager", "Supplier"],
       required: true,
     },
   },

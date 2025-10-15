@@ -1,4 +1,4 @@
-// frontend/src/pages/financialmanager/FinancialKPI.jsx
+
 import React from 'react';
 
 const FinancialKPI = ({ title, value, growth, icon, subValue }) => {

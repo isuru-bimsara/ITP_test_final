@@ -1,3 +1,4 @@
+// frontend/src/pages/hrmanager/pdfGenerator.js
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -31,7 +32,7 @@ export const createBeautifulEmployeePDF = ({
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(22);
   doc.setFont("helvetica", "bold");
-  doc.text("🏢 HR MANAGEMENT SYSTEM", 14, 18);
+  doc.text("HR MANAGEMENT SYSTEM", 14, 18);
 
   // Report Title
   doc.setFontSize(16);
@@ -66,7 +67,7 @@ export const createBeautifulEmployeePDF = ({
 
   doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
-  doc.text("📈 REPORT SUMMARY", 18, 63);
+  doc.text("REPORT SUMMARY", 18, 63);
 
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
@@ -149,7 +150,7 @@ export const createBeautifulEmployeePDF = ({
       doc.setFont("helvetica", "normal");
 
       doc.text(
-        "🏢 HR Management System | Garment Factory Ltd.",
+        "HR Management System | Garment Factory Ltd.",
         14,
         pageHeight - 12
       );
@@ -187,7 +188,7 @@ export const createBeautifulEmployeePDF = ({
       doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(...primaryBlue);
-      doc.text("📊 DEPARTMENT BREAKDOWN", 14, finalY + 20);
+      doc.text("DEPARTMENT BREAKDOWN", 14, finalY + 20);
 
       const statsData = Object.entries(departmentStats)
         .sort(([, a], [, b]) => b - a)
@@ -199,7 +200,7 @@ export const createBeautifulEmployeePDF = ({
         ]);
 
       autoTable(doc, {
-        head: [["Department", "Count", "Percentage", "Rating"]],
+        head: [["Department", "Count", "Percentage"]],
         body: statsData,
         startY: finalY + 25,
         theme: "striped",

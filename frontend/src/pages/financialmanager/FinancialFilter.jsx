@@ -1,4 +1,4 @@
-// frontend/src/pages/financialmanager/FinancialFilter.jsx
+
 import React from 'react';
 
 const FinancialFilter = ({ dateRange, onFilterChange }) => {

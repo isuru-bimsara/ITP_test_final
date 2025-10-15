@@ -1,14 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import Button from '../../components/common/Button';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 import { useAuth } from '../../hooks/useAuth';
+import { Shield } from 'lucide-react';
 
 const API_URL = 'http://localhost:5000/api/inquiries';
+
+// Validation Schema for the reply form
+const ReplySchema = Yup.object().shape({
+    reply: Yup.string()
+        .trim()
+        .min(10, 'Reply must be at least 10 characters long.')
+        .required('Reply message cannot be empty.'),
+});
+
 
 const AdminInquiries = () => {
     const [inquiries, setInquiries] = useState([]);
     const [selectedInquiry, setSelectedInquiry] = useState(null);
-    const [reply, setReply] = useState('');
+
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('all'); // all, open, closed
     const [loading, setLoading] = useState(false);
@@ -22,25 +36,38 @@ const AdminInquiries = () => {
             setInquiries(data);
         } catch (error) {
             console.error("Failed to fetch inquiries", error);
+            // Toast notification for error
+            toast.error("Failed to fetch inquiries. Please try again later.");
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        if(user) fetchInquiries();
+        if (user) fetchInquiries();
     }, [user]);
-    
-    const handleReply = async (e) => {
-        e.preventDefault();
+
+    // This function will now be the submit handler for Formik
+    const handleReplySubmit = async (values, { setSubmitting, resetForm }) => {
+        if (!selectedInquiry) {
+            toast.error("No inquiry selected.");
+            setSubmitting(false);
+            return;
+        }
+
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            const { data } = await axios.put(`${API_URL}/${selectedInquiry._id}/reply`, { message: reply }, config);
+            const { data } = await axios.put(`${API_URL}/${selectedInquiry._id}/reply`, { message: values.reply }, config);
+            
             setSelectedInquiry(data);
-            setReply('');
-            fetchInquiries(); 
+            resetForm(); // Reset the form after successful submission
+            await fetchInquiries(); // Refresh the list
+            toast.success("Reply sent successfully!");
         } catch (error) {
             console.error("Failed to send reply", error);
+            toast.error("Failed to send reply. Please check your connection.");
+        } finally {
+            setSubmitting(false); // Re-enable the submit button
         }
     };
 
@@ -48,20 +75,23 @@ const AdminInquiries = () => {
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
             await axios.put(`${API_URL}/${id}/close`, {}, config);
-            fetchInquiries();
-            setSelectedInquiry(null);
+            
+            await fetchInquiries(); // Refresh the list
+            setSelectedInquiry(null); // Deselect the inquiry
+            toast.success("Inquiry has been closed.");
         } catch (error) {
             console.error("Failed to close inquiry", error);
+            toast.error("Could not close the inquiry. Please try again.");
         }
     };
 
     const filteredInquiries = inquiries.filter(inquiry => {
         const matchesSearch = inquiry.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                             inquiry.customer.username.toLowerCase().includes(searchTerm.toLowerCase());
+                              inquiry.customer.username.toLowerCase().includes(searchTerm.toLowerCase());
         
         const matchesFilter = filterStatus === 'all' || 
-                             (filterStatus === 'open' && !inquiry.isClosed) ||
-                             (filterStatus === 'closed' && inquiry.isClosed);
+                              (filterStatus === 'open' && !inquiry.isClosed) ||
+                              (filterStatus === 'closed' && inquiry.isClosed);
         
         return matchesSearch && matchesFilter;
     });
@@ -80,95 +110,43 @@ const AdminInquiries = () => {
     };
 
     return (
-        <div className="min-h-screen" style={{ backgroundColor: styles.secondary }}>
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+            {/* ToastContainer is where all toast notifications will be rendered */}
+            <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+            />
             <div className="max-w-7xl mx-auto p-6">
-                {/* Header Section */}
-                <div className="mb-8">
-                    <div className="flex items-center mb-6">
-                        <div 
-                            className="w-16 h-16 rounded-2xl flex items-center justify-center mr-4 shadow-lg"
-                            style={{ backgroundColor: styles.primary }}
-                        >
-                            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <h1 className="text-3xl font-bold mb-2" style={{ color: styles.textMain }}>
-                                Admin Inquiries
-                            </h1>
-                            <p className="text-lg" style={{ color: styles.textSecondary }}>
-                                Manage and respond to customer inquiries efficiently
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Stats Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                        <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: styles.borderMain }}>
-                            <div className="flex items-center">
-                                <div 
-                                    className="w-12 h-12 rounded-xl flex items-center justify-center mr-4"
-                                    style={{ backgroundColor: styles.secondary }}
-                                >
-                                    <svg className="w-6 h-6" style={{ color: styles.primary }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
-                                    </svg>
+                {/* Page Title Card - Updated to match theme */}
+                <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
+                    <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-5">
+                        <div className="flex items-center justify-between flex-wrap gap-4">
+                            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                                <Shield className="w-7 h-7" />
+                                Admin Inquiries Management
+                            </h2>
+                            <div className="flex items-center gap-3">
+                                <div className="bg-white bg-opacity-20 px-4 py-2 rounded-lg">
+                                    <span className="text-blue-500 font-semibold text-sm">
+                                        Total: {inquiries.length}
+                                    </span>
                                 </div>
-                                <div>
-                                    <p className="text-sm" style={{ color: styles.textSecondary }}>Total</p>
-                                    <p className="text-2xl font-bold" style={{ color: styles.textMain }}>{inquiries.length}</p>
+                                <div className="bg-green-500 bg-opacity-30 px-4 py-2 rounded-lg">
+                                    <span className="text-white font-semibold text-sm">
+                                        Open: {openInquiries}
+                                    </span>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: styles.borderMain }}>
-                            <div className="flex items-center">
-                                <div 
-                                    className="w-12 h-12 rounded-xl flex items-center justify-center mr-4"
-                                    style={{ backgroundColor: '#dcfce7' }}
-                                >
-                                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p className="text-sm" style={{ color: styles.textSecondary }}>Open</p>
-                                    <p className="text-2xl font-bold text-green-600">{openInquiries}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: styles.borderMain }}>
-                            <div className="flex items-center">
-                                <div 
-                                    className="w-12 h-12 rounded-xl flex items-center justify-center mr-4"
-                                    style={{ backgroundColor: '#f3f4f6' }}
-                                >
-                                    <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p className="text-sm" style={{ color: styles.textSecondary }}>Closed</p>
-                                    <p className="text-2xl font-bold text-gray-600">{closedInquiries}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: styles.borderMain }}>
-                            <div className="flex items-center">
-                                <div 
-                                    className="w-12 h-12 rounded-xl flex items-center justify-center mr-4"
-                                    style={{ backgroundColor: styles.secondary }}
-                                >
-                                    <svg className="w-6 h-6" style={{ color: styles.primary }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p className="text-sm" style={{ color: styles.textSecondary }}>Filtered</p>
-                                    <p className="text-2xl font-bold" style={{ color: styles.textMain }}>{filteredInquiries.length}</p>
+                                <div className="bg-gray-500 bg-opacity-30 px-4 py-2 rounded-lg">
+                                    <span className="text-white font-semibold text-sm">
+                                        Closed: {closedInquiries}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -176,7 +154,7 @@ const AdminInquiries = () => {
                 </div>
 
                 {/* Main Content */}
-                <div className="bg-white rounded-3xl shadow-xl border overflow-hidden" style={{ borderColor: styles.borderMain, height: 'calc(100vh - 280px)' }}>
+                <div className="bg-white rounded-3xl shadow-xl border overflow-hidden" style={{ borderColor: styles.borderMain, height: 'calc(100vh - 200px)' }}>
                     <div className="flex h-full">
                         {/* Left Sidebar */}
                         <div className="w-1/3 border-r flex flex-col" style={{ borderColor: styles.borderMain, backgroundColor: styles.secondary }}>
@@ -402,47 +380,62 @@ const AdminInquiries = () => {
                                         </div>
                                     </div>
 
-                                    {/* Reply Form */}
+                                    {/* Reply Form with Formik Validation */}
                                     {!selectedInquiry.isClosed && (
                                         <div 
                                             className="p-6 border-t"
                                             style={{ backgroundColor: 'white', borderColor: styles.borderMain }}
                                         >
-                                            <form onSubmit={handleReply} className="flex gap-4">
-                                                <textarea 
-                                                    className="flex-1 px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 transition-all duration-200 resize-none"
-                                                    style={{ borderColor: styles.borderMain }}
-                                                    onFocus={(e) => {
-                                                        e.target.style.borderColor = styles.primary;
-                                                        e.target.style.boxShadow = `0 0 0 2px ${styles.primary}33`;
-                                                    }}
-                                                    onBlur={(e) => {
-                                                        e.target.style.borderColor = styles.borderMain;
-                                                        e.target.style.boxShadow = 'none';
-                                                    }}
-                                                    rows="3" 
-                                                    placeholder="Type your reply as an admin..."
-                                                    value={reply}
-                                                    onChange={(e) => setReply(e.target.value)}
-                                                    required
-                                                />
-                                                <button
-                                                    type="submit"
-                                                    className="px-6 py-3 rounded-xl font-semibold text-white transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 shrink-0"
-                                                    style={{ backgroundColor: styles.primary }}
-                                                    onMouseEnter={(e) => {
-                                                        e.target.style.backgroundColor = styles.primaryHover;
-                                                    }}
-                                                    onMouseLeave={(e) => {
-                                                        e.target.style.backgroundColor = styles.primary;
-                                                    }}
-                                                >
-                                                    <svg className="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                                                    </svg>
-                                                    Send Reply
-                                                </button>
-                                            </form>
+                                            <Formik
+                                                initialValues={{ reply: '' }}
+                                                validationSchema={ReplySchema}
+                                                onSubmit={handleReplySubmit}
+                                            >
+                                                {({ isSubmitting, errors, touched }) => (
+                                                    <Form>
+                                                        <div className="flex flex-col sm:flex-row gap-4">
+                                                            <div className="flex-1">
+                                                                <Field
+                                                                    as="textarea"
+                                                                    name="reply"
+                                                                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 transition-all duration-200 resize-none ${
+                                                                        errors.reply && touched.reply ? 'border-red-500' : 'border-gray-300'
+                                                                    }`}
+                                                                    style={{ borderColor: styles.borderMain }}
+                                                                    onFocus={(e) => {
+                                                                        if (!(errors.reply && touched.reply)) {
+                                                                            e.target.style.borderColor = styles.primary;
+                                                                            e.target.style.boxShadow = `0 0 0 2px ${styles.primary}33`;
+                                                                        }
+                                                                    }}
+                                                                    onBlur={(e) => {
+                                                                        if (!(errors.reply && touched.reply)) {
+                                                                            e.target.style.borderColor = styles.borderMain;
+                                                                            e.target.style.boxShadow = 'none';
+                                                                        }
+                                                                    }}
+                                                                    rows="3"
+                                                                    placeholder="Type your reply as an admin..."
+                                                                />
+                                                                <ErrorMessage name="reply" component="div" className="text-red-500 text-xs mt-2" />
+                                                            </div>
+                                                            <button
+                                                                type="submit"
+                                                                disabled={isSubmitting}
+                                                                className="px-6 py-3 rounded-xl font-semibold text-white transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                style={{ backgroundColor: styles.primary }}
+                                                                onMouseEnter={(e) => { e.target.style.backgroundColor = styles.primaryHover; }}
+                                                                onMouseLeave={(e) => { e.target.style.backgroundColor = styles.primary; }}
+                                                            >
+                                                                <svg className="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                                                </svg>
+                                                                {isSubmitting ? 'Sending...' : 'Send Reply'}
+                                                            </button>
+                                                        </div>
+                                                    </Form>
+                                                )}
+                                            </Formik>
                                         </div>
                                     )}
                                 </>

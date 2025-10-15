@@ -1,4 +1,4 @@
-// frontend/src/pages/financialmanager/RevenueExpenseChart.jsx
+
 import React from 'react';
 import {
   Chart as ChartJS,

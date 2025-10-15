@@ -3,6 +3,7 @@ import axios from 'axios';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import { useAuth } from '../../hooks/useAuth';
+import { HelpCircle, FileText, Search as SearchIcon, Edit, Trash2 } from 'lucide-react';
 
 const API_URL = 'http://localhost:5000/api/faqs';
 
@@ -68,21 +69,20 @@ const ManageFaqs = () => {
     };
 
     const handleDelete = async (id) => {
-    console.log("Deleting FAQ ID:", id, "with token:", user?.token, "and role:", user?.role);
+        console.log("Deleting FAQ ID:", id, "with token:", user?.token, "and role:", user?.role);
 
-    if (window.confirm("Are you sure?")) {
-        try {
-        const config = { headers: { Authorization: `Bearer ${user.token}` } };
-        await axios.delete(`${API_URL}/${id}`, config);
-        setSuccess('FAQ deleted successfully!');
-        fetchFaqs();
-        } catch (error) {
-        console.error("Delete error:", error.response?.data || error);
-        setError("Failed to delete FAQ");
+        if (window.confirm("Are you sure?")) {
+            try {
+                const config = { headers: { Authorization: `Bearer ${user.token}` } };
+                await axios.delete(`${API_URL}/${id}`, config);
+                setSuccess('FAQ deleted successfully!');
+                fetchFaqs();
+            } catch (error) {
+                console.error("Delete error:", error.response?.data || error);
+                setError("Failed to delete FAQ");
+            }
         }
-    }
     };
-
 
     const resetForm = () => {
         setQuestion('');
@@ -106,124 +106,70 @@ const ManageFaqs = () => {
     };
 
     return (
-        <div className="min-h-screen" style={{ backgroundColor: styles.secondary }}>
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
             <div className="max-w-7xl mx-auto p-6">
-                {/* Header Section */}
-                <div className="mb-8">
-                    <div className="flex items-center mb-6">
-                        <div 
-                            className="w-16 h-16 rounded-2xl flex items-center justify-center mr-4 shadow-lg"
-                            style={{ backgroundColor: styles.primary }}
-                        >
-                            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <h1 className="text-3xl font-bold mb-2" style={{ color: styles.textMain }}>
-                                Manage FAQs
-                            </h1>
-                            <p className="text-lg" style={{ color: styles.textSecondary }}>
-                                Create, edit, and organize frequently asked questions
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Stats Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: styles.borderMain }}>
-                            <div className="flex items-center">
-                                <div 
-                                    className="w-12 h-12 rounded-xl flex items-center justify-center mr-4"
-                                    style={{ backgroundColor: styles.secondary }}
-                                >
-                                    <svg className="w-6 h-6" style={{ color: styles.primary }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                    </svg>
+                {/* Page Title Card - Updated to match theme */}
+                <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
+                    <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-5">
+                        <div className="flex items-center justify-between flex-wrap gap-4">
+                            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                                <HelpCircle className="w-7 h-7" />
+                                FAQ Management
+                            </h2>
+                            <div className="flex items-center gap-3">
+                                <div className="bg-white bg-opacity-20 px-4 py-2 rounded-lg">
+                                    <span className="text-blue-500 font-semibold text-sm">
+                                        Total: {faqs.length}
+                                    </span>
                                 </div>
-                                <div>
-                                    <p className="text-sm" style={{ color: styles.textSecondary }}>Total FAQs</p>
-                                    <p className="text-2xl font-bold" style={{ color: styles.textMain }}>{faqs.length}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: styles.borderMain }}>
-                            <div className="flex items-center">
-                                <div 
-                                    className="w-12 h-12 rounded-xl flex items-center justify-center mr-4"
-                                    style={{ backgroundColor: styles.secondary }}
-                                >
-                                    <svg className="w-6 h-6" style={{ color: styles.primary }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p className="text-sm" style={{ color: styles.textSecondary }}>Filtered Results</p>
-                                    <p className="text-2xl font-bold" style={{ color: styles.textMain }}>{filteredFaqs.length}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: styles.borderMain }}>
-                            <div className="flex items-center">
-                                <div 
-                                    className="w-12 h-12 rounded-xl flex items-center justify-center mr-4"
-                                    style={{ backgroundColor: styles.secondary }}
-                                >
-                                    <svg className="w-6 h-6" style={{ color: editingFaq ? '#f59e0b' : styles.primary }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p className="text-sm" style={{ color: styles.textSecondary }}>Status</p>
-                                    <p className="text-2xl font-bold" style={{ color: editingFaq ? '#f59e0b' : styles.textMain }}>
-                                        {editingFaq ? 'Editing' : 'Ready'}
-                                    </p>
+                                <div className="bg-white bg-opacity-20 px-4 py-2 rounded-lg">
+                                    <span className="text-blue-500 font-semibold text-sm">
+                                        Filtered: {filteredFaqs.length}
+                                    </span>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    {/* Alerts */}
-                    {error && (
-                        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl">
-                            <div className="flex items-center">
-                                <svg className="w-5 h-5 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <p className="text-red-700 font-medium">{error}</p>
-                                <button 
-                                    onClick={() => setError('')}
-                                    className="ml-auto text-red-500 hover:text-red-700"
-                                >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {success && (
-                        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-2xl">
-                            <div className="flex items-center">
-                                <svg className="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <p className="text-green-700 font-medium">{success}</p>
-                                <button 
-                                    onClick={() => setSuccess('')}
-                                    className="ml-auto text-green-500 hover:text-green-700"
-                                >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    )}
                 </div>
+
+                {/* Alerts */}
+                {error && (
+                    <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4">
+                        <div className="flex items-center">
+                            <svg className="w-5 h-5 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <p className="text-red-700 font-medium">{error}</p>
+                            <button 
+                                onClick={() => setError('')}
+                                className="ml-auto text-red-500 hover:text-red-700"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {success && (
+                    <div className="mb-6 bg-green-50 border border-green-200 rounded-xl p-4">
+                        <div className="flex items-center">
+                            <svg className="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <p className="text-green-700 font-medium">{success}</p>
+                            <button 
+                                onClick={() => setSuccess('')}
+                                className="ml-auto text-green-500 hover:text-green-700"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Left Column - Form */}

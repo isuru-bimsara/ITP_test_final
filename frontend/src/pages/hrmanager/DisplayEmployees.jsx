@@ -1,4 +1,4 @@
-// frontend/src/pages/hrmanager/DisplayEmployees.jsx
+
 import React, { useEffect, useState } from "react";
 import Sidebar from "./HRsidebar";
 import { useNavigate } from "react-router-dom";
