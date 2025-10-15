@@ -57,4 +57,5 @@ const RevenueExpenseChart = ({ data }) => {
   return <Line options={options} data={chartData} />;
 };
 
+//export the component
 export default RevenueExpenseChart;
