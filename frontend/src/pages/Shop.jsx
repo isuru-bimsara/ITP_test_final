@@ -18,7 +18,7 @@ import {
 import { useAuth } from "../hooks/useAuth";
 
 const categories = ['Trousers', 'Skirts', 'Blouse', 'Dresses', 'Shirts', 'Jackets', 'Sweaters', 'Shorts', 'Jeans'];
-
+// product details
 function Shop() {
   const location = useLocation();
   const [products, setProducts] = useState([]);
@@ -443,5 +443,5 @@ function Shop() {
     </div>
   );
 }
-
+//export shop
 export default Shop;
