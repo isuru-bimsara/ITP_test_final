@@ -5,7 +5,7 @@ const { protect, isAdmin } = require('../middleware/authMiddleware');
 
 router.route('/')
     .post(protect, createReview)
-    .get(protect, isAdmin, getAllReviews);
+    .get( getAllReviews);
 
 router.get('/my-reviews', protect, getMyReviews);
 

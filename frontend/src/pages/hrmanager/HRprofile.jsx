@@ -84,43 +84,7 @@ function renderRoleFields(
     case "ordersupplymanager":
     case "deliverymanager":
     case "feedbackservicemanager":
-      return (
-        <>
-          <ProfileField
-            icon={<FiBriefcase className="mr-2" />}
-            label="Department"
-            value={data?.department}
-            isEditing={isEditing}
-            inputProps={{
-              name: "department",
-              value: data?.department || "",
-              onChange: onChangeRoleField,
-            }}
-          />
-          <ProfileField
-            icon={<FiPhone className="mr-2" />}
-            label="Contact Number"
-            value={data?.contactNumber}
-            isEditing={isEditing}
-            inputProps={{
-              name: "contactNumber",
-              value: data?.contactNumber || "",
-              onChange: onChangeRoleField,
-            }}
-          />
-          <ProfileField
-            icon={<FiMapPin className="mr-2" />}
-            label="Address"
-            value={data?.address}
-            isEditing={isEditing}
-            inputProps={{
-              name: "address",
-              value: data?.address || "",
-              onChange: onChangeRoleField,
-            }}
-          />
-        </>
-      );
+      return <></>;
     default:
       return null;
   }
@@ -283,6 +247,9 @@ const HRprofile = () => {
       alert("Password must be at least 6 characters");
       return;
     }
+
+    const token = getAuthToken();
+
     try {
       setPasswordLoading(true);
       const { data } = await axios.put(
@@ -290,6 +257,11 @@ const HRprofile = () => {
         {
           currentPassword: passwordData.currentPassword,
           newPassword: passwordData.newPassword,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // ✅ directly include token
+          },
         }
       );
       alert(data.message || "Password updated successfully!");

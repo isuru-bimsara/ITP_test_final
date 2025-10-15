@@ -3,6 +3,7 @@ import axios from 'axios';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import { useAuth } from '../../hooks/useAuth';
+import { BiSupport } from "react-icons/bi";
 
 const API_URL = 'http://localhost:5000/api/inquiries';
 
@@ -63,14 +64,15 @@ const CustomerInquiries = () => {
         >
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
-                <div className="mb-8">
-                    <h1 
-                        className="text-3xl font-bold mb-10"
-                        style={{ color: 'var(--color-text-main)' }}
-                    >
-                        Customer Support
-                    </h1>
-                </div>
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-4 rounded-xl shadow-lg mb-4">
+            <BiSupport  className="text-3xl" />
+            <h1 className="text-3xl font-bold">Customer Support</h1>
+          </div>
+          <p className="text-gray-600 text-lg font-medium">
+            Support You Can Trust, Every Single Time
+          </p>
+        </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Left Column - New Inquiry & Inquiry List */}

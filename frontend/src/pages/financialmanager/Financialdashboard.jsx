@@ -1,4 +1,4 @@
-// frontend/src/pages/financialmanager/Financialdashboard.jsx
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -28,17 +28,14 @@ const FinancialDashboard = () => {
     try {
       setLoading(true);
       
-      // Fetch financial summary
       const summaryResponse = await axios.get('/api/finance/summary', {
         params: dateRange
       });
       setSummary(summaryResponse.data.data);
 
-      // Fetch KPIs
       const kpisResponse = await axios.get('/api/finance/kpis');
       setKpis(kpisResponse.data.data);
 
-      // Fetch monthly data
       const monthlyResponse = await axios.get('/api/finance/monthly');
       setMonthlyData(monthlyResponse.data.data);
 
@@ -77,86 +74,122 @@ const FinancialDashboard = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-blue-800">Dashboard</h1>
-        <button
-          onClick={handleGenerateReport}
-          disabled={generatingPDF || !kpis || !summary}
-          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed transition-colors"
-        >
-          {generatingPDF ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
-              Generating PDF...
-            </>
-          ) : (
-            <>
-              <FaFilePdf className="mr-2" />
-              Downloard Report
-            </>
-          )}
-        </button>
-      </div>
-      
-      {/* KPI Summary Cards */}
-      {kpis && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <FinancialKPI 
-            title="Revenue" 
-            value={`Rs ${kpis.revenue?.toLocaleString()}`} 
-            growth={kpis.revenueGrowth} 
-            icon={<FaChartLine className="text-green-500" size={24} />} 
-          />
-          <FinancialKPI 
-            title="Expenses" 
-            value={`Rs ${kpis.expenses?.toLocaleString()}`} 
-            growth={kpis.expensesGrowth} 
-            icon={<FaMoneyBillWave className="text-red-500" size={24} />} 
-          />
-          <FinancialKPI 
-            title="Employees" 
-            value={kpis.employees} 
-            icon={<FaUserTie className="text-purple-500" size={24} />} 
-          />
-          <FinancialKPI 
-            title="Profit" 
-            value={`Rs ${kpis.profit?.toLocaleString()}`} 
-            subValue={`${kpis.profitMargin}% margin`} 
-            icon={<FaShoppingCart className="text-blue-500" size={24} />} 
-          />
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Financial Summary</h1>
         </div>
-      )}
-      
-      {/* Financial Summary Filter */}
-      <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">Financial Summary</h2>
-          <div className="flex items-center space-x-4">
-            <FinancialFilter dateRange={dateRange} onFilterChange={setDateRange} />
-          </div>
-        </div>
-        
-        <FinancialSummary summary={summary} />
-      </div>
-      
-      {/* Revenue and Expenses Chart */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">Revenue vs Expenses (Last 12 Months)</h2>
-        </div>
-        <RevenueExpenseChart data={monthlyData} />
-      </div>
 
-      {/* PDF Generation Status */}
-      {generatingPDF && (
-        <div className="fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
-          <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
-          Generating PDF Report...
+        {/* KPI Cards - Matching the screenshot layout */}
+        {kpis && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            {/* Revenue Card */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-medium text-gray-600 uppercase tracking-wide">Revenue</h3>
+                <FaChartLine className="text-green-500 text-lg" />
+              </div>
+              <p className="text-2xl font-bold text-gray-900 mb-2">
+                Rs {kpis.revenue?.toLocaleString() || '0'}
+              </p>
+              <div className="flex items-center text-xs text-green-600">
+                <span className="font-medium">100% from last period</span>
+              </div>
+            </div>
+
+            {/* Expenses Card */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-medium text-gray-600 uppercase tracking-wide">Expenses</h3>
+                <FaMoneyBillWave className="text-red-500 text-lg" />
+              </div>
+              <p className="text-2xl font-bold text-gray-900 mb-2">
+                Rs {kpis.expenses?.toLocaleString() || '0'}
+              </p>
+              <div className="flex items-center text-xs text-red-600">
+                <span className="font-medium">100% from last period</span>
+              </div>
+            </div>
+
+            {/* Employees Card */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-medium text-gray-600 uppercase tracking-wide">Employees</h3>
+                <FaUserTie className="text-purple-500 text-lg" />
+              </div>
+              <p className="text-2xl font-bold text-gray-900 mb-2">
+                {kpis.employees || '0'}
+              </p>
+              <div className="text-xs text-gray-500">
+                <span>Active staff</span>
+              </div>
+            </div>
+
+            {/* Profit Card */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-medium text-gray-600 uppercase tracking-wide">Profit</h3>
+                <FaShoppingCart className="text-blue-500 text-lg" />
+              </div>
+              <p className="text-2xl font-bold text-gray-900 mb-2">
+                Rs {kpis.profit?.toLocaleString() || '0'}
+              </p>
+              <div className="flex items-center text-xs text-blue-600">
+                <span className="font-medium">{kpis.profitMargin || '0'}% margin</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Date Range Filter */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-lg font-semibold text-gray-900">Date Range</h2>
+            <button
+              onClick={handleGenerateReport}
+              disabled={generatingPDF || !kpis || !summary}
+              className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed transition-colors font-medium"
+            >
+              {generatingPDF ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <FaFilePdf className="mr-2" />
+                  Download Report
+                </>
+              )}
+            </button>
+          </div>
+          <FinancialFilter dateRange={dateRange} onFilterChange={setDateRange} />
         </div>
-      )}
+
+        {/* Financial Summary */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+          <h2 className="text-lg font-semibold text-gray-900 mb-6">Financial Overview</h2>
+          <FinancialSummary summary={summary} />
+        </div>
+
+        {/* Revenue vs Expenses Chart */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-6">Revenue vs Expenses Trend</h2>
+          <RevenueExpenseChart data={monthlyData} />
+        </div>
+
+        {/* PDF Generation Status */}
+        {generatingPDF && (
+          <div className="fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
+            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+            Generating PDF Report...
+          </div>
+        )}
+      </div>
     </div>
   );
 };
 
 export default FinancialDashboard;
+

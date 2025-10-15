@@ -1,4 +1,4 @@
-// frontend/src/pages/financialmanager/Navbar.jsx
+
 import React from 'react';
 
 const Navbar = () => {

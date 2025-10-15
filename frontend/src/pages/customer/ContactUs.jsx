@@ -87,15 +87,15 @@ const ContactUs = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-blue-700 mb-2">Phone Number * (10-15 digits)</label>
+                <label className="block text-sm font-semibold text-blue-700 mb-2">Phone Number * (10 digits)</label>
                 <input
                   type="tel"
                   name="phoneNumber"
                   value={formData.phoneNumber}
                   onChange={handleChange}
                   required
-                  pattern="[0-9]{10,15}"
-                  placeholder="0712345678 or +94712345678"
+                  pattern="[0-9]{10}"
+                  placeholder="0712345678 "
                   className="w-full p-4 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none transition-colors"
                 />
               </div>

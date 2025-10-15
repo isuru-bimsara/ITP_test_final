@@ -15,6 +15,21 @@ const getMyDeliveries = asyncHandler(async (req, res) => {
     res.json(deliveries);
 });
 
+const getDeliveryById = asyncHandler(async (req, res) => {
+    const delivery = await Delivery.findById(req.params.id)
+        .populate('customer', 'username')
+        .populate('driver', 'name')
+        .populate('vehicle', 'plateNumber');
+
+    if (delivery) {
+        res.json(delivery);
+    } else {
+        res.status(404);
+        throw new Error('Delivery not found');
+    }
+});
+
+
 
 const createDelivery = asyncHandler(async (req, res) => {
     // This controller is now designed for an Admin creating a delivery.
@@ -77,5 +92,5 @@ const updateDelivery = asyncHandler(async (req, res) => {
     }
 });
 
-module.exports = { getDeliveries, getMyDeliveries, createDelivery, updateDelivery };
+module.exports = { getDeliveries, getMyDeliveries, createDelivery, updateDelivery, getDeliveryById  };
 

@@ -5,12 +5,13 @@ import Header from '../components/dashboard/Header';
 
 const CustomerLayout = () => {
      const navLinks = [
-       // { name: 'Dashboard', path: '/customer/dashboard' },
-        { name: 'My Orders', path: '/customer/orders' },
+        { name: 'Home', path: '../' },
+        { name: 'Dashboard', path: '/customer/dashboard' },
+        { name: 'My Orders', path: '/customer/my-order-display' },
+        { name: 'My Deliveries', path: '/customer/orders' },
         { name: 'My Reviews', path: '/customer/reviews' },
-        { name: 'View FAQs', path: '/customer/faqs' },
         { name: 'Inquiries', path: '/customer/inquiries' },
-        { name: 'Contact Us', path: '/customer/contactus' },
+
      
     ];
     

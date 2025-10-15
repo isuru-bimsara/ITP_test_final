@@ -3,6 +3,7 @@ import axios from 'axios';
 import Card from '../../components/common/Card';
 import StatusTracker from '../../components/customer/StatusTracker';
 import { useAuth } from '../../hooks/useAuth';
+import { TbTruckDelivery } from "react-icons/tb";
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -36,12 +37,15 @@ const MyOrders = () => {
 
     return (
         <div className="p-6 max-w-6xl mx-auto min-h-screen" style={{ backgroundColor: 'var(--color-secondary)' }}>
-                        <div>
-                            <h1 className="text-3xl font-bold mb-10" style={{ color: styles.textMain }}>
-                                My Delivery Orders
-                            </h1>
-
-                        </div>
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-4 rounded-xl shadow-lg mb-4">
+            <TbTruckDelivery    className="text-3xl" />
+            <h1 className="text-3xl font-bold">My Delivery Orders</h1>
+          </div>
+          <p className="text-gray-600 text-lg font-medium">
+            Track Your Orders, Anytime, Anywhere Easily
+          </p>
+        </div>
             
             {orders.length > 0 ? (
                 orders.map(order => (
